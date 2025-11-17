@@ -1,0 +1,11 @@
+[gd_resource type="BoxMesh" load_steps=3 format=3 uid="uid://e67qx28c6fwm"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_57msv"]
+load_path = "res://.godot/imported/dirt.png-7acc9491ccfc1eb025cbaeb3c2739baf.s3tc.ctex"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_p7kx0"]
+albedo_texture = SubResource("CompressedTexture2D_57msv")
+texture_filter = 0
+
+[resource]
+material = SubResource("StandardMaterial3D_p7kx0")

@@ -1,0 +1,52 @@
+[gd_scene load_steps=5 format=3 uid="uid://b4u7qcpuyw0fj"]
+
+[ext_resource type="Script" uid="uid://fu8iad35s8pj" path="res://scripts/items/equipment_slot.gd" id="1_6j8u0"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_obwa2"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_lf8cf"]
+load_path = "res://.godot/imported/stats_icons.png-446afbfcce18ee24df3f631051b258bf.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6j8u0"]
+atlas = SubResource("CompressedTexture2D_lf8cf")
+region = Rect2(0, 0, 18, 18)
+
+[node name="EquipmentSlot" type="PanelContainer"]
+custom_minimum_size = Vector2(50, 50)
+offset_right = 59.0
+offset_bottom = 50.0
+tooltip_text = "Equipment Slots only accept items of a certain type.  "
+theme_override_styles/panel = SubResource("StyleBoxEmpty_obwa2")
+script = ExtResource("1_6j8u0")
+
+[node name="SlotBackgroundDisplay" type="NinePatchRect" parent="."]
+self_modulate = Color(0.49803922, 1, 1, 1)
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+texture = SubResource("AtlasTexture_6j8u0")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="ItemDisplay" type="NinePatchRect" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="SlotCount" type="Label" parent="MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 16
+text = "0"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Highlight" type="ColorRect" parent="."]
+visible = false
+layout_mode = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0.39215687)

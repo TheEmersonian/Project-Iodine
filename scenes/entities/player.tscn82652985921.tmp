@@ -1,0 +1,77 @@
+[gd_scene load_steps=10 format=3 uid="uid://bfxa5pid3lbdu"]
+
+[ext_resource type="Script" uid="uid://d3w22ngjvl3fh" path="res://scripts/entities/player/player.gd" id="1_08t41"]
+[ext_resource type="PackedScene" uid="uid://b0gob3vo1d03d" path="res://scenes/ui/crosshair.tscn" id="2_5u6hq"]
+[ext_resource type="PackedScene" uid="uid://dscmtqfahp8dv" path="res://scenes/ui/info_panel.tscn" id="2_42nxq"]
+[ext_resource type="PackedScene" uid="uid://cndiwhcn4w421" path="res://scenes/ui/hotbar.tscn" id="3_1ie0h"]
+[ext_resource type="PackedScene" uid="uid://gqnw4wg66ygh" path="res://scenes/ui/inventory.tscn" id="4_42nxq"]
+[ext_resource type="PackedScene" uid="uid://dt6ok5fgnxgr2" path="res://scenes/ui/floating_item.tscn" id="6_d4qa6"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_08t41"]
+size = Vector3(0.7, 1.8, 0.7)
+
+[sub_resource type="BoxMesh" id="BoxMesh_08t41"]
+size = Vector3(0.7, 1.8, 0.7)
+
+[sub_resource type="GDScript" id="GDScript_1ie0h"]
+script/source = "extends CanvasLayer
+
+
+func _process(_delta: float) -> void:
+	%FloatingItem.position = %FloatingItem.get_global_mouse_position()
+	
+	
+	
+
+
+
+#end
+"
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_08t41")
+selected_position = null
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_08t41")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_08t41")
+
+[node name="FirstPersonCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+
+[node name="InteractionRaycast" type="RayCast3D" parent="FirstPersonCamera"]
+target_position = Vector3(0, 0, -5)
+
+[node name="ThirdPersonCamera" type="Camera3D" parent="FirstPersonCamera"]
+transform = Transform3D(1, 0, 0, 0, 0.8660254, 0.5, 0, -0.5, 0.8660254, 0, 1.9999999, 3.1727185)
+
+[node name="UI" type="CanvasLayer" parent="."]
+script = SubResource("GDScript_1ie0h")
+
+[node name="Crosshair" parent="UI" instance=ExtResource("2_5u6hq")]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+
+[node name="InfoPanel" parent="UI" instance=ExtResource("2_42nxq")]
+
+[node name="Hotbar" parent="UI" instance=ExtResource("3_1ie0h")]
+anchors_preset = 7
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -8.0
+offset_bottom = 0.0
+grow_vertical = 0
+pivot_offset = Vector2(40, 12)
+
+[node name="Inventory" parent="UI" instance=ExtResource("4_42nxq")]
+
+[node name="FloatingItem" parent="UI" instance=ExtResource("6_d4qa6")]
+unique_name_in_owner = true
+
+[connection signal="selected_item_changed" from="UI/Hotbar" to="." method="_on_hotbar_selected_item_changed"]
+[connection signal="slot_clicked" from="UI/Hotbar" to="." method="_on_hotbar_slot_clicked"]

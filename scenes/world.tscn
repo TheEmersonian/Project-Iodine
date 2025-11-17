@@ -1,0 +1,41 @@
+[gd_scene load_steps=7 format=3 uid="uid://cfnr4ca22og42"]
+
+[ext_resource type="MeshLibrary" uid="uid://bdatvgi4cfr5s" path="res://assets/resources/blocks.tres" id="1_rwgxs"]
+[ext_resource type="Script" uid="uid://btd005xvgc2kd" path="res://scripts/blocks/grid_map.gd" id="2_4wyf3"]
+[ext_resource type="MeshLibrary" uid="uid://cydj2huuuaevr" path="res://assets/resources/block_overlays.tres" id="3_4wyf3"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_e5uuo"]
+sky_top_color = Color(0.26364025, 0.6113812, 0.88896304, 1)
+sky_horizon_color = Color(0.7245861, 0.8037714, 0.86416686, 1)
+ground_horizon_color = Color(0.7245861, 0.8037714, 0.86416686, 1)
+
+[sub_resource type="Sky" id="Sky_nnsk1"]
+sky_material = SubResource("ProceduralSkyMaterial_e5uuo")
+
+[sub_resource type="Environment" id="Environment_rwgxs"]
+background_mode = 2
+sky = SubResource("Sky_nnsk1")
+tonemap_mode = 2
+ssao_enabled = true
+glow_enabled = true
+
+[node name="World" type="Node3D"]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_rwgxs")
+
+[node name="GridMap" type="GridMap" parent="."]
+mesh_library = ExtResource("1_rwgxs")
+cell_size = Vector3(1, 1, 1)
+script = ExtResource("2_4wyf3")
+metadata/_editor_floor_ = Vector3(0, 0, 0)
+
+[node name="BlockOverlay" type="GridMap" parent="."]
+unique_name_in_owner = true
+mesh_library = ExtResource("3_4wyf3")
+cell_size = Vector3(1, 1, 1)
+metadata/_editor_floor_ = Vector3(0, 0, 0)

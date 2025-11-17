@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://i4m4bit1t8f4"]
+
+[ext_resource type="Texture2D" uid="uid://bbfoetu5yj0e6" path="res://assets/textures/icons/dirt.png" id="1_0pff4"]
+[ext_resource type="Script" uid="uid://dhnqx5ehrso8g" path="res://scripts/entities/dropped_item.gd" id="1_c4qjp"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_c4qjp"]
+size = Vector3(0.2, 0.2, 0.2)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_c4qjp"]
+radius = 1.0
+
+[node name="DroppedItem" type="RigidBody3D"]
+script = ExtResource("1_c4qjp")
+
+[node name="ItemTexture" type="Sprite3D" parent="."]
+billboard = 2
+double_sided = false
+texture = ExtResource("1_0pff4")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_c4qjp")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+
+[node name="Area3D" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+shape = SubResource("SphereShape3D_c4qjp")

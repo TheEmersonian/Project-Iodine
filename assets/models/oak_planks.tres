@@ -1,0 +1,11 @@
+[gd_resource type="BoxMesh" load_steps=3 format=3 uid="uid://co4kbrapdtrj"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_dfjbu"]
+load_path = "res://.godot/imported/oak_planks.png-8fabaa66303b712d278f4ceed1ccbea4.s3tc.ctex"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3fw68"]
+albedo_texture = SubResource("CompressedTexture2D_dfjbu")
+texture_filter = 0
+
+[resource]
+material = SubResource("StandardMaterial3D_3fw68")

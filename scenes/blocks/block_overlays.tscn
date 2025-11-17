@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://cs5q5h7wbi6at"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_owodv"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(1, 1, 1, 0.19607843)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jqio2"]
+material = SubResource("StandardMaterial3D_owodv")
+size = Vector3(1.001, 1.001, 1.001)
+
+[node name="block_overlays" type="Node3D"]
+
+[node name="Highlight" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_jqio2")

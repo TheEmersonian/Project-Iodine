@@ -1,0 +1,13 @@
+[gd_resource type="BoxMesh" load_steps=3 format=3 uid="uid://cswckpgw8cu76"]
+
+[ext_resource type="Texture2D" uid="uid://byteid1mf5g1h" path="res://assets/textures/blocks/stone.png" id="1_nguah"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_p2c7g"]
+albedo_texture = ExtResource("1_nguah")
+metallic_specular = 0.0
+texture_filter = 0
+texture_repeat = false
+
+[resource]
+lightmap_size_hint = Vector2i(14, 21)
+material = SubResource("StandardMaterial3D_p2c7g")
