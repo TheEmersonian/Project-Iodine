@@ -127,6 +127,13 @@ func set_slot_item(slot_index: int, item: Item):
 	target_slot.stored_item = item
 	target_slot.update_item()
 
+func get_slot(slot_index: int):
+	return hotbar_slot_container.get_child(slot_index)
+
+func get_selected_slot():
+	#remember it is one based
+	return hotbar_slot_container.get_child(selected_slot_index-1)
+
 func update_slots():
 	for i in range(9):
 		var slot: ItemSlot = get_node("HotbarSlotContainer/ItemSlot" + str(i+1))

@@ -4,9 +4,9 @@ extends GridMap
 
 @export var player_scene: PackedScene = preload("res://scenes/entities/player.tscn")
 
-@export var world_size: Vector3i = Vector3i(5,3,5)
-##DO NOT CHANGE THIS
+@export var world_size: Vector3i = Vector3i(5,5,5)
 
+##DO NOT CHANGE THIS
 @export var chunk_size: Vector3i = Vector3i(16,16,16)
 @export var noise1: FastNoiseLite = FastNoiseLite.new()
 @export var noise2: FastNoiseLite = FastNoiseLite.new()
@@ -43,11 +43,27 @@ class Chunk:
 			multiplier *= 1.0 - 1.0/float(size)
 		return value / (multi_start - multiplier)
 	
+	func check_noise_spikes(pos: Vector2, noisearray: Array[FastNoiseLite], spike_threshold: float = 0.9):
+		var x: float = pos.x
+		var y: float = pos.y
+		var spike_stacks: int = 0
+		var spike_height: float = 0
+		for n in noisearray:
+			var value: float = n.get_noise_2d(x*5, y*5)
+			if value > spike_threshold:
+				spike_stacks += 1
+				spike_height += value
+				spike_height = pow(spike_height, value*2.0)
+		if spike_stacks >= 0: #noisearray.size()*0.5:
+			return spike_height
+		else:
+			return 0.0
+	
 	func generate_chunk(noisearray: Array[FastNoiseLite]):
 		var grass: int = ItemProcesser.item_to_id("dirt_with_grass")
 		var dirt: int = ItemProcesser.item_to_id("dirt")
 		var stone: int = ItemProcesser.item_to_id("stone")
-		#var deep_stone: int = ItemProcesser.item_to_id("deep_stone")
+		var deep_stone: int = ItemProcesser.item_to_id("deep_stone")
 		var bedrock: int = ItemProcesser.item_to_id("bedrock")
 		var chunk_offset: Vector3i = cpos_to_bpos(cpos)
 		blocks.resize(16)
@@ -61,22 +77,26 @@ class Chunk:
 					var noise_position = chunk_offset + Vector3i(x, 0, z)
 					var noise_value: float = calculate_layered_noise(Vector2(noise_position.x, noise_position.z), noisearray, -5)
 					var height: int = 5 + abs(round(noise_value*10.0))
-					var true_height: int = height - chunk_offset.y
+					var tpos: Vector3i = chunk_offset + Vector3i(x, y, z)
 					
-					if y == true_height:
+					if tpos.y == height:
 						blocks[x][y][z] = grass
-					elif y < true_height:
+					elif tpos.y < height:
 						@warning_ignore("narrowing_conversion")
-						var dirt_height: int = true_height-(height/10.0)
-						if y > dirt_height:
+						var dirt_height: int = height-(height/10.0)
+						if tpos.y > dirt_height:
 							blocks[x][y][z] = dirt
 						if cpos.y == 0:
-							if y <= abs(noise_value*5):
+							if tpos.y <= noisearray[4].get_noise_3d(tpos.x, tpos.y, tpos.z)*12.0 + (5-y) - ((noisearray[4].get_noise_3d(tpos.x*100.0, tpos.y*100.0, tpos.z*100.0)*10.0)):
 								blocks[x][y][z] = bedrock
 							else:
-								blocks[x][y][z] = stone
+								blocks[x][y][z] = deep_stone
+						elif tpos.y <= height*0.5:
+							blocks[x][y][z] = deep_stone
 						else:
 							blocks[x][y][z] = stone
+					elif tpos.y <= check_noise_spikes(Vector2(x, z), noisearray, 0.5):
+						blocks[x][y][z] = bedrock
 					else:
 						blocks[x][y][z] = -1
 	func place_chunk(grid: GridMap):

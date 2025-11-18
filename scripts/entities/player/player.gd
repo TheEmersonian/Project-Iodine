@@ -29,6 +29,7 @@ var sprint_timer: float = 0
 var sprint_input_period: float = 12
 var sprinting: bool = false
 var FOV: float = 75.0
+#var collision_friction: float = 0.025 #Unused: The amount you slow down per collision
 
 enum Perspective {
 	First,
@@ -130,6 +131,28 @@ func update_ui():
 
 func check_for_ui_inputs():
 	if !Input.is_action_pressed("Alternative Action Trigger"):
+		if Input.is_action_just_pressed("Swap Offhand"):
+			print("Attempting to swap offhands")
+			var offhand: ItemSlot = inventory.offhand_slot
+			var mainhand: ItemSlot = hotbar.get_selected_slot()
+			if offhand.stored_item.item_id == 0:
+				print("Offhand is empty")
+				if mainhand.stored_item.item_id == 0:
+					print("Mainhand is also empty, returning")
+					return
+				else:	
+					print("Mainhand swapping to offhand")
+					offhand.stored_item = mainhand.stored_item.copy()
+					mainhand.clear()
+					offhand.update_item()
+					mainhand.update_item()
+			elif mainhand.stored_item.item_id == 0:
+				mainhand.stored_item = offhand.stored_item.copy()
+				offhand.clear()
+				offhand.update_item()
+				mainhand.update_item()
+			else:
+				return
 		if Input.is_action_just_pressed("Open Inventory"):
 			# If the inventory is open, close it
 			if inventory_open:
@@ -164,7 +187,7 @@ func check_for_perspective_change():
 
 func check_for_movement():
 	# Handle jump.
-	if Input.is_action_just_pressed("Jump") and is_on_floor():
+	if Input.is_action_pressed("Jump") and is_on_floor():
 		velocity.y = jump_strength.current_value()
 	# Handle Sprinting
 	sprint_timer -= 1.0
@@ -216,6 +239,8 @@ func check_for_pickup(hit_object: Node3D):
 			interaction_raycast.force_raycast_update()
 
 func check_for_block_interaction(hit_object: Node3D):
+	if hit_object == null:
+		return
 	# check for breaking blocks
 	if Input.is_action_just_pressed("Left Click"):
 		if hit_object.has_method("destroy_block"):

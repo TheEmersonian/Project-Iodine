@@ -1,0 +1,20 @@
+[gd_scene load_steps=5 format=3 uid="uid://cq6ua43qdebxo"]
+
+[ext_resource type="Texture2D" uid="uid://bu5scaulhg3xp" path="res://assets/textures/blocks/crafting_table.png" id="1_eevww"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bu1fb"]
+albedo_texture = ExtResource("1_eevww")
+texture_filter = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_8p8to"]
+material = SubResource("StandardMaterial3D_bu1fb")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_81ux6"]
+
+[node name="Crafting Table" type="MeshInstance3D"]
+mesh = SubResource("BoxMesh_8p8to")
+
+[node name="Hitbox" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Hitbox"]
+shape = SubResource("BoxShape3D_81ux6")

@@ -6,6 +6,8 @@ ERROR CODES:
 	2 = tried to convert a block id that isn't in the game to a block name 
 
 # BUGS: 
+	Sideways movement does not work properly
+	Deep stone doesnt have an icon
 	Select inventory square and mouse no go back - fixed (was setting mouse mode to confined instead of captured when closing the inventory)
 	Game crashes when picking up items - fixed (was checking the raycasts collider after removing it)
 	When opening the inventory, you keep moving if you were already and some wierd physics happens
