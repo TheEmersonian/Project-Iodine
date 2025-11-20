@@ -6,6 +6,7 @@ ERROR CODES:
 	2 = tried to convert a block id that isn't in the game to a block name 
 
 # BUGS: 
+	Placing grass crashes the game
 	Sideways movement does not work properly
 	Deep stone doesnt have an icon
 	Select inventory square and mouse no go back - fixed (was setting mouse mode to confined instead of captured when closing the inventory)
@@ -16,6 +17,7 @@ ERROR CODES:
 	
 
 # TODO: 
+	Chunks generate around player, save to file, and load from file
 	Selected item is held
 	3d item textures
 	

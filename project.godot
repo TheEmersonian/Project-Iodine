@@ -18,6 +18,7 @@ config/icon="res://assets/textures/icon.svg"
 [autoload]
 
 ItemProcesser="*res://scripts/items/itemprocesser.gd"
+BlockRegistry="*res://scripts/blocks/BlockRegistry.gd"
 
 [display]
 

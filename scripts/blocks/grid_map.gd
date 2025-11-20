@@ -4,32 +4,52 @@ extends GridMap
 
 @export var player_scene: PackedScene = preload("res://scenes/entities/player.tscn")
 
-@export var world_size: Vector3i = Vector3i(5,5,5)
+@export var world_size: Vector3i = Vector3i(3,3,3)
 
 ##DO NOT CHANGE THIS
-@export var chunk_size: Vector3i = Vector3i(16,16,16)
+const CHUNK_SIZE: int = 16
+
 @export var noise1: FastNoiseLite = FastNoiseLite.new()
 @export var noise2: FastNoiseLite = FastNoiseLite.new()
 @export var noise3: FastNoiseLite = FastNoiseLite.new()
 @export var noise4: FastNoiseLite = FastNoiseLite.new()
 @export var noise5: FastNoiseLite = FastNoiseLite.new()
 
-var world: Array = []
+var world := {}
 
 var player_ref: CharacterBody3D
 
 class Chunk:
 	var cpos: Vector3i
-	var blocks: Array = []
+	var blocks: PackedInt32Array
+	var metadata := {}
+	var tile_entities := {} 
 	
 	func _init(chunk_position: Vector3i) -> void:
 		cpos = chunk_position
+		blocks.resize(CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE)
 	
 	func cpos_to_bpos(chunk_position: Vector3i):
 		return chunk_position*16
 	
+	func bpos_to_index(pos: Vector3i) -> int:
+		return pos.x + pos.y*CHUNK_SIZE + pos.z*CHUNK_SIZE*CHUNK_SIZE
+	
+	func index_to_bpos(index: int) -> Vector3i:
+		var x = index % CHUNK_SIZE
+		@warning_ignore("integer_division")
+		var y = (index / CHUNK_SIZE) % CHUNK_SIZE
+		@warning_ignore("integer_division")
+		var z = index / (CHUNK_SIZE * CHUNK_SIZE)
+		return Vector3i(x, y, z)
+	
 	func set_block(pos: Vector3i, id: int):
-		blocks[pos.x][pos.y].set(pos.z, id)
+		var index: int = bpos_to_index(pos)
+		blocks.set(index, id)
+	
+	func create_tile_entity(pos: Vector3i, script: Script):
+		var tile_entity = script.new(self, pos)
+		tile_entities[pos] = tile_entity
 	
 	func calculate_layered_noise(pos: Vector2, noisearray: Array[FastNoiseLite], base_height: float):
 		var x: float = pos.x
@@ -66,55 +86,44 @@ class Chunk:
 		var deep_stone: int = ItemProcesser.item_to_id("deep_stone")
 		var bedrock: int = ItemProcesser.item_to_id("bedrock")
 		var chunk_offset: Vector3i = cpos_to_bpos(cpos)
-		blocks.resize(16)
-		for x in range(16):
-			blocks.set(x, [])
-			blocks[x].resize(16)
-			for y in range(16):
-				blocks[x].set(y, [])
-				blocks[x][y].resize(16)
-				for z in range(16):
-					var noise_position = chunk_offset + Vector3i(x, 0, z)
+		for x in range(CHUNK_SIZE):
+			for y in range(CHUNK_SIZE):
+				for z in range(CHUNK_SIZE):
+					var in_chunk_position: Vector3i = Vector3i(x, y, z)
+					var noise_position: Vector3i = chunk_offset + Vector3i(x, 0, z)
 					var noise_value: float = calculate_layered_noise(Vector2(noise_position.x, noise_position.z), noisearray, -5)
 					var height: int = 5 + abs(round(noise_value*10.0))
-					var tpos: Vector3i = chunk_offset + Vector3i(x, y, z)
+					var tpos: Vector3i = chunk_offset + in_chunk_position
 					
 					if tpos.y == height:
-						blocks[x][y][z] = grass
+						set_block(in_chunk_position, grass)
 					elif tpos.y < height:
 						@warning_ignore("narrowing_conversion")
 						var dirt_height: int = height-(height/10.0)
 						if tpos.y > dirt_height:
-							blocks[x][y][z] = dirt
+							set_block(in_chunk_position, dirt)
 						if cpos.y == 0:
 							if tpos.y <= noisearray[4].get_noise_3d(tpos.x, tpos.y, tpos.z)*12.0 + (5-y) - ((noisearray[4].get_noise_3d(tpos.x*100.0, tpos.y*100.0, tpos.z*100.0)*10.0)):
-								blocks[x][y][z] = bedrock
+								set_block(in_chunk_position, bedrock)
 							else:
-								blocks[x][y][z] = deep_stone
+								set_block(in_chunk_position, deep_stone)
 						elif tpos.y <= height*0.5:
-							blocks[x][y][z] = deep_stone
+							set_block(in_chunk_position, deep_stone)
 						else:
-							blocks[x][y][z] = stone
-					elif tpos.y <= check_noise_spikes(Vector2(x, z), noisearray, 0.5):
-						blocks[x][y][z] = bedrock
+							set_block(in_chunk_position, stone)
 					else:
-						blocks[x][y][z] = -1
+						set_block(in_chunk_position, -1)
+	
 	func place_chunk(grid: GridMap):
 		var chunk_offset: Vector3i = cpos_to_bpos(cpos)
-		var pos: Vector3i = Vector3i.ZERO
-		for x in blocks:
-			pos.x += 1
-			for y in x:
-				pos.y += 1
-				for z in y:
-					pos.z += 1
-					var block: int = blocks[pos.x-1][pos.y-1][pos.z-1] - 1
-					grid.set_cell_item(chunk_offset + pos, block)
-				pos.z = 0
-			pos.y = 0
-		pos.x = 0
+		for i in blocks.size():
+			var pos: Vector3i = index_to_bpos(i)
+			var block: int = blocks[i]
+			grid.set_cell_item(chunk_offset + pos, block-1)
+
 
 func _ready() -> void:
+	
 	setup_noise()
 	generate_world()
 	spawn_player()
@@ -130,7 +139,8 @@ func destroy_block(world_coordinate: Vector3, drop_block: bool = true):
 	var map_coordinate: Vector3i = local_to_map(world_coordinate)
 	var chunk_coordinate: Vector3i = block_pos_to_chunk_pos(map_coordinate)
 	var cbpos: Vector3i = map_coordinate - chunk_pos_to_block_pos(chunk_coordinate)
-	world[chunk_coordinate.x][chunk_coordinate.y][chunk_coordinate.z].set_block(cbpos, -1)
+	var chunk: Chunk = world[chunk_coordinate]
+	chunk.set_block(cbpos, -1)
 	if drop_block:
 		var block_id: int = get_cell_item(map_coordinate) + 1
 		var block_item: Item = Item.new(ItemProcesser.id_to_item(block_id), block_id, 1)
@@ -144,7 +154,13 @@ func place_block(world_coordinate: Vector3, item_id: int):
 	var map_coordinate: Vector3i = local_to_map(world_coordinate)
 	var chunk_coordinate: Vector3i = block_pos_to_chunk_pos(map_coordinate)
 	var cbpos: Vector3i = map_coordinate - chunk_pos_to_block_pos(chunk_coordinate)
-	world[chunk_coordinate.x][chunk_coordinate.y][chunk_coordinate.z].set_block(cbpos, item_id-1)
+	var chunk: Chunk = world[chunk_coordinate]
+	chunk.set_block(cbpos, item_id)
+	
+	var def = BlockRegistry.get_block(item_id)
+	if def.function:
+		chunk.create_tile_entity(map_coordinate, def.function)
+	
 	#subtract 1 because the mesh library starts with 0 but block id's start with 1
 	set_cell_item(map_coordinate, item_id-1)
 
@@ -171,18 +187,13 @@ func setup_noise():
 	noise5.frequency = 0.0625
 
 func generate_world():
-	world.resize(world_size.x)
 	for chunk_x in range(world_size.x):
-		world.set(chunk_x, [])
-		world[chunk_x].resize(world_size.y)
 		for chunk_y in range(world_size.y):
-			world[chunk_x].set(chunk_y, [])
-			world[chunk_x][chunk_y].resize(world_size.z)
 			for chunk_z in range(world_size.z):
 				var new_chunk: Chunk = Chunk.new(Vector3i(chunk_x, chunk_y, chunk_z))
 				new_chunk.generate_chunk([noise1, noise2, noise3,noise4,noise5])
 				new_chunk.place_chunk(self)
-				world[chunk_x][chunk_y].set(chunk_z, new_chunk)
+				world[Vector3i(chunk_x, chunk_y, chunk_z)] = new_chunk
 
 func chunk_pos_to_block_pos(chunk_pos: Vector3i):
 	return Vector3i(chunk_pos * 16)
@@ -201,5 +212,70 @@ func spawn_player():
 	add_child(player)
 	player.position = Vector3(world_size.x/2.0,y_level+1,world_size.z/2.0)
 	player_ref = player
+
+func save_chunk_to_file(filepath: String, chunk: Chunk):
+	#check if the path exists
+	if not FileAccess.file_exists(filepath):
+		print("Error: No file at path")
+		return
+	#save the chunk in a specific structure with the position easy to reach
+	var file = FileAccess.open(filepath, FileAccess.WRITE)
+	var json = {
+		"pos": [chunk.cpos.x, chunk.cpos.y, chunk.cpos.z],
+		"data": JSON.stringify(chunk)
+	}
+	#store the line and close the file, this only appends, which is why we need update_chunk_in_file()
+	file.store_line(json)
+	file.close()
+
+
+func load_chunk_from_file(filepath: String, cpos: Vector3i):
+	#check if the file exists
+	if not FileAccess.file_exists(filepath):
+		return {}
+	#go through the lines, skipping empty ones
+	var file = FileAccess.open(filepath, FileAccess.READ)
+	while file.get_position() < file.get_length():
+		var line: String = file.get_line()
+		if line.is_empty():
+			continue
+		
+		var parsed_line = JSON.parse_string(line)
+		if parsed_line == null:
+			continue
+		var p = parsed_line.get("pos")
+		if p and Vector3i(p[0], p[1], p[2]) == cpos:
+			file.close()
+			return parsed_line["data"]
+	file.close()
+	return {}
+
+func update_chunk_in_file(filepath: String, chunk: Chunk):
+	if not FileAccess.file_exists(filepath):
+		return
+	
+	var file = FileAccess.open(filepath, FileAccess.READ)
+	var stored_chunks: Array[String] = []
+	var target_chunk_pos: Vector3i = chunk.cpos
+	
+	while file.get_position() < file.get_length():
+		var line: String = file.get_line()
+		if line.is_empty():
+			continue
+		
+		var parsed_line = JSON.parse_string(line)
+		if parsed_line:
+			var p: Array[int] = parsed_line.get("pos")
+			if p and Vector3i(p[0], p[1], p[2]) == target_chunk_pos:
+				parsed_line["data"] = JSON.stringify(chunk)
+				line = JSON.stringify(parsed_line)
+		stored_chunks.append(line)
+	file.close()
+	
+	var out = FileAccess.open(filepath, FileAccess.WRITE)
+	for c in stored_chunks:
+		out.store_line(c)
+	out.close()
+
 
 #end
