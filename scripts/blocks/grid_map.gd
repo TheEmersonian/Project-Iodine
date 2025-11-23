@@ -4,30 +4,62 @@ extends GridMap
 
 @export var player_scene: PackedScene = preload("res://scenes/entities/player.tscn")
 
-@export var world_size: Vector3i = Vector3i(3,3,3)
 
 ##DO NOT CHANGE THIS
 const CHUNK_SIZE: int = 16
+##Region size in chunks
+const REGION_SIZE: Vector3i = Vector3(4, 16, 4)
 
-@export var noise1: FastNoiseLite = FastNoiseLite.new()
-@export var noise2: FastNoiseLite = FastNoiseLite.new()
-@export var noise3: FastNoiseLite = FastNoiseLite.new()
-@export var noise4: FastNoiseLite = FastNoiseLite.new()
-@export var noise5: FastNoiseLite = FastNoiseLite.new()
+@export var noise_parameters := {
+	"seed": 1,
+	"octaves": 5,
+	"base_frequency": 0.01,
+	"fractal_gain": 0.3,
+	"amplitude": 3.4,
+	"domain_warp_enabled": true,
+	"domain_warp_amplitude": 15,
+	"domain_warp_fractal_gain": 0.5,
+	"domain_warp_fractal_lacunarity": 3.0,
+	"domain_warp_fractal_octaves": 3,
+	"domain_warp_fractal_type": FastNoiseLite.DOMAIN_WARP_FRACTAL_PROGRESSIVE,
+	"domain_warp_frequency": 0.01,
+	"domain_warp_type": FastNoiseLite.DOMAIN_WARP_SIMPLEX_REDUCED,
+}
+
+var generation_queue := {}
 
 var world := {}
 
 var player_ref: CharacterBody3D
+var player_position: Vector3
+var player_chunk: Vector3i
+##Render Distance
+const R_D: int = 3
+
+class Region:
+	var rpos: Vector3
+	var chunks: Dictionary = {}
+	
+	func add_chunk(chunk: Chunk):
+		var chunk_position_in_region: Vector3i = Vector3i(chunk.cpos.x % REGION_SIZE.x, chunk.cpos.y % REGION_SIZE.y, chunk.cpos.z % REGION_SIZE.z)
+		chunks[chunk_position_in_region] = chunk
 
 class Chunk:
 	var cpos: Vector3i
 	var blocks: PackedInt32Array
+	var difficulty: float
+	var base_difficulty: float
+	var tempature: float
+	var humidity: float
 	var metadata := {}
 	var tile_entities := {} 
 	
-	func _init(chunk_position: Vector3i) -> void:
+	func _init(chunk_position: Vector3i, chunk_blocks: PackedInt32Array = []) -> void:
 		cpos = chunk_position
-		blocks.resize(CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE)
+		if chunk_blocks.is_empty():
+			blocks.resize(CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE)
+		else:
+			blocks = chunk_blocks
 	
 	func cpos_to_bpos(chunk_position: Vector3i):
 		return chunk_position*16
@@ -47,39 +79,27 @@ class Chunk:
 		var index: int = bpos_to_index(pos)
 		blocks.set(index, id)
 	
+	func get_block(pos: Vector3i):
+		return blocks[bpos_to_index(pos)]
+	
 	func create_tile_entity(pos: Vector3i, script: Script):
 		var tile_entity = script.new(self, pos)
 		tile_entities[pos] = tile_entity
 	
-	func calculate_layered_noise(pos: Vector2, noisearray: Array[FastNoiseLite], base_height: float):
-		var x: float = pos.x
-		var y: float = pos.y
-		var value: float = base_height
-		var multiplier: float = 2.0
-		var multi_start: float = multiplier
-		var size: int = noisearray.size()
-		for n in noisearray:
-			value += abs(n.get_noise_2d(x, y) * multiplier)
-			multiplier *= 1.0 - 1.0/float(size)
-		return value / (multi_start - multiplier)
-	
-	func check_noise_spikes(pos: Vector2, noisearray: Array[FastNoiseLite], spike_threshold: float = 0.9):
-		var x: float = pos.x
-		var y: float = pos.y
-		var spike_stacks: int = 0
-		var spike_height: float = 0
-		for n in noisearray:
-			var value: float = n.get_noise_2d(x*5, y*5)
-			if value > spike_threshold:
-				spike_stacks += 1
-				spike_height += value
-				spike_height = pow(spike_height, value*2.0)
-		if spike_stacks >= 0: #noisearray.size()*0.5:
-			return spike_height
-		else:
-			return 0.0
-	
-	func generate_chunk(noisearray: Array[FastNoiseLite]):
+	func generate_chunk(noise_parameters: Dictionary):
+		var noise: FastNoiseLite = FastNoiseLite.new()
+		noise.seed = noise_parameters.seed
+		noise.fractal_octaves = noise_parameters.octaves
+		noise.frequency = noise_parameters.base_frequency
+		noise.fractal_gain = noise_parameters.fractal_gain
+		noise.domain_warp_enabled = noise_parameters.domain_warp_enabled
+		noise.domain_warp_amplitude = noise_parameters.domain_warp_amplitude
+		noise.domain_warp_fractal_gain = noise_parameters.domain_warp_fractal_gain
+		noise.domain_warp_fractal_lacunarity = noise_parameters.domain_warp_fractal_lacunarity
+		noise.domain_warp_fractal_octaves = noise_parameters.domain_warp_fractal_octaves
+		noise.domain_warp_fractal_type = noise_parameters.domain_warp_fractal_type
+		noise.domain_warp_frequency = noise_parameters.domain_warp_frequency
+		noise.domain_warp_type = noise_parameters.domain_warp_type
 		var grass: int = ItemProcesser.item_to_id("dirt_with_grass")
 		var dirt: int = ItemProcesser.item_to_id("dirt")
 		var stone: int = ItemProcesser.item_to_id("stone")
@@ -87,12 +107,12 @@ class Chunk:
 		var bedrock: int = ItemProcesser.item_to_id("bedrock")
 		var chunk_offset: Vector3i = cpos_to_bpos(cpos)
 		for x in range(CHUNK_SIZE):
-			for y in range(CHUNK_SIZE):
-				for z in range(CHUNK_SIZE):
+			for z in range(CHUNK_SIZE):
+				var noise_position: Vector3i = chunk_offset + Vector3i(x, 0, z)
+				var noise_value: float = noise.get_noise_2d(noise_position.x, noise_position.z) * noise_parameters.amplitude
+				var height: int = 5 + abs(round(noise_value*10.0))
+				for y in range(CHUNK_SIZE):
 					var in_chunk_position: Vector3i = Vector3i(x, y, z)
-					var noise_position: Vector3i = chunk_offset + Vector3i(x, 0, z)
-					var noise_value: float = calculate_layered_noise(Vector2(noise_position.x, noise_position.z), noisearray, -5)
-					var height: int = 5 + abs(round(noise_value*10.0))
 					var tpos: Vector3i = chunk_offset + in_chunk_position
 					
 					if tpos.y == height:
@@ -103,7 +123,7 @@ class Chunk:
 						if tpos.y > dirt_height:
 							set_block(in_chunk_position, dirt)
 						if cpos.y == 0:
-							if tpos.y <= noisearray[4].get_noise_3d(tpos.x, tpos.y, tpos.z)*12.0 + (5-y) - ((noisearray[4].get_noise_3d(tpos.x*100.0, tpos.y*100.0, tpos.z*100.0)*10.0)):
+							if tpos.y <= -30:
 								set_block(in_chunk_position, bedrock)
 							else:
 								set_block(in_chunk_position, deep_stone)
@@ -119,36 +139,160 @@ class Chunk:
 		for i in blocks.size():
 			var pos: Vector3i = index_to_bpos(i)
 			var block: int = blocks[i]
+			#  For block orientation later
+			#var blockinfo = BlockRegistry.get_block(block)
+			#if blockinfo.generated_rotation != BlockRegistry.GeneratedRotationType.Fixed:
+			#	match blockinfo.generated_rotation:
+			#		BlockRegistry.GeneratedRotationType.Random: pass
+						
 			grid.set_cell_item(chunk_offset + pos, block-1)
+	
+	##Autimatically assumes it is exposed if it is at the edge of the chunk
+	func is_exposed(pos: Vector3i):
+		#if do_print:
+		#	var worldpos: Vector3i = cpos_to_bpos(cpos)
+		#	print("checking exposure of pos: " + str(pos) + " is within chunk: " + str(AABB(worldpos, Vector3i.ONE*CHUNK_SIZE).has_point(worldpos+pos)))
+		#	return true
+		
+		if blocks[bpos_to_index(pos)] == -1:
+			return true
+		if pos.y != 15:
+			var top_block: int = blocks[bpos_to_index(pos + Vector3i(0, 1, 0))]
+			if top_block == -1:
+				return true
+		#if not on the bottom look for air on the bottom
+		if pos.y != 0:
+			var bottom_block: int = blocks[bpos_to_index(pos + Vector3i(0, -1, 0))]
+			if bottom_block == -1:
+				return true
+		#if not on the side look for air on the side
+		if pos.x != 15:
+			var left_block: int = blocks[bpos_to_index(pos + Vector3i(1, 0, 0))]
+			if left_block == -1:
+				return true
+		#if not on the other side look for air on the other side:
+		if pos.x != 0:
+			var right_block: int = blocks[bpos_to_index(pos + Vector3i(-1, 0, 0))]
+			if right_block == -1:
+				return true
+		#same checks but for the z axis
+		if pos.z != 15:
+			var left_block: int = blocks[bpos_to_index(pos + Vector3i(0, 0, 1))]
+			if left_block == -1:
+				return true
+		if pos.z != 0:
+			var right_block: int = blocks[bpos_to_index(pos + Vector3i(0, 0, -1))]
+			if right_block == -1:
+				return true
+		return false
+	
+	func place_chunk_fast(grid: GridMap):
+		var chunk_offset: Vector3i = cpos_to_bpos(cpos)
+		for i in blocks.size():
+			if blocks[i] == -1:
+				continue
+			var pos: Vector3i = index_to_bpos(i)
+			if is_exposed(pos):
+				grid.set_cell_item(chunk_offset + pos, blocks[i]-1)
+	
+	func regenerate_chunk_visual(grid: GridMap, pos: Vector3i):
+		if is_exposed(pos):
+			grid.set_cell_item(pos + cpos_to_bpos(cpos), blocks[bpos_to_index(pos)]-1)
+
 
 
 func _ready() -> void:
-	
-	setup_noise()
-	generate_world()
+	load_new_chunks(calculate_loaded_chunks(Vector3i(0,0,0)))
 	spawn_player()
 
 func _physics_process(_delta: float) -> void:
+	manage_block_overlay()
+	if has_player_moved():
+		player_position = player_ref.position
+		player_chunk = floor(player_position/CHUNK_SIZE)
+		var loaded_chunks_list: Array[Vector3i] = calculate_loaded_chunks(player_chunk)
+		load_new_chunks(loaded_chunks_list)
+		unload_old_chunks(loaded_chunks_list)
+
+func _process(_delta: float) -> void:
+	var start_time: float = Time.get_ticks_msec()
+	for i in generation_queue.keys():
+		var current_chunk: Chunk = generation_queue[i]
+		current_chunk.generate_chunk(noise_parameters)
+		world[i] = current_chunk
+		current_chunk.place_chunk_fast(self)
+		generation_queue.erase(i)
+		if Time.get_ticks_msec() - start_time > 10:
+			return
+
+func manage_block_overlay():
 	block_overlay.clear()
 	var hpos: Vector3 = player_ref.selected_position
 	if hpos != Vector3.ZERO:
 		var bpos: Vector3i = block_overlay.local_to_map(hpos)
 		block_overlay.set_cell_item(bpos, 0)
 
+func has_player_moved() -> bool:
+	if player_position == player_ref.position:
+		return false
+	return true
+
+func load_new_chunks(loaded_chunks_list: Array[Vector3i]):
+	for l in loaded_chunks_list:
+		if world.has(l):
+			continue
+		elif generation_queue.has(l):
+			continue
+		else:
+			var new_chunk: Chunk = Chunk.new(l)
+			generation_queue[l] = new_chunk
+
+func unload_old_chunks(loaded_chunks_list):
+	for l in loaded_chunks_list:
+		if !world.has(l):
+			pass
+	
+
+##c = center
+func calculate_loaded_chunks(c: Vector3i) -> Array[Vector3i]:
+	var loaded_chunks: Array[Vector3i]
+	for x in range(c.x-R_D, c.x+R_D):
+		for y in range(c.y-R_D, c.y+R_D):
+			for z in range(c.z-R_D, c.z+R_D):
+				loaded_chunks.append(Vector3i(x, y, z))
+	return loaded_chunks
+
+func regenerate_rectangular_prism(pos: Vector3i, size: Vector3i):
+	print("---Regenerating Rectangle at pos: " + str(pos) + " of size: " + str(size))
+	for x in range(pos.x, pos.x+size.x):
+		for y in range(pos.y, pos.y+size.y):
+			for z in range(pos.z, pos.z+size.z):
+				var block_pos: Vector3i = Vector3i(x, y, z)
+				var chunk_pos: Vector3i = block_pos_to_chunk_pos(block_pos)
+				var chunk: Chunk = world[chunk_pos]
+				var in_chunk_pos = block_pos - (chunk_pos * CHUNK_SIZE)
+				chunk.regenerate_chunk_visual(self, in_chunk_pos)
+				#print("block_pos: " + str(block_pos) + " chunk pos: " + str(chunk_pos) + " local pos: " + str(in_chunk_pos))
+
 func destroy_block(world_coordinate: Vector3, drop_block: bool = true):
-	var map_coordinate: Vector3i = local_to_map(world_coordinate)
-	var chunk_coordinate: Vector3i = block_pos_to_chunk_pos(map_coordinate)
-	var cbpos: Vector3i = map_coordinate - chunk_pos_to_block_pos(chunk_coordinate)
+	var block_coordinate: Vector3i = local_to_map(world_coordinate)
+	var chunk_coordinate: Vector3i = block_pos_to_chunk_pos(block_coordinate)
+	var cbpos: Vector3i = block_coordinate - chunk_pos_to_block_pos(chunk_coordinate)
+	print("Destroying block in position: " + str(block_coordinate) + " at chunk: " + str(chunk_coordinate) + " local pos: " + str(cbpos))
 	var chunk: Chunk = world[chunk_coordinate]
 	chunk.set_block(cbpos, -1)
-	if drop_block:
-		var block_id: int = get_cell_item(map_coordinate) + 1
-		var block_item: Item = Item.new(ItemProcesser.id_to_item(block_id), block_id, 1)
-		var dropped_item = DroppedItem.new(block_item)
-		add_child(dropped_item)
-		dropped_item.global_position = world_coordinate
-		dropped_item.give_random_jump()
-	set_cell_item(map_coordinate, -1)
+	
+	regenerate_rectangular_prism(block_coordinate-Vector3i.ONE, Vector3i.ONE * 3)
+	print("Current Block: " + str(chunk.get_block(cbpos)))
+		
+	#if drop_block:
+		##var block_id: int = chunk.blocks[chunk.bpos_to_index(cbpos)]
+		##var block_item: Item = Item.new(ItemProcesser.id_to_item(block_id), block_id, 1)
+		##var dropped_item = DroppedItem.new(block_item)
+		##add_child(dropped_item)
+		##dropped_item.global_position = world_coordinate
+		#dropped_item.give_random_jump()
+	#set_cell_item(block_coordinate, -1)
 
 func place_block(world_coordinate: Vector3, item_id: int):
 	var map_coordinate: Vector3i = local_to_map(world_coordinate)
@@ -167,50 +311,20 @@ func place_block(world_coordinate: Vector3, item_id: int):
 func generate_block(pos: Vector3i, index: int):
 	set_cell_item(pos, index)
 
-func setup_noise():
-	noise1.seed = randi()
-	noise2.seed = randi()
-	noise3.seed = randi()
-	noise4.seed = randi()
-	noise5.seed = randi()
-	
-	noise1.noise_type = FastNoiseLite.TYPE_CELLULAR
-	noise2.noise_type = FastNoiseLite.TYPE_PERLIN
-	noise3.noise_type = FastNoiseLite.TYPE_CELLULAR
-	noise4.noise_type = FastNoiseLite.TYPE_PERLIN
-	noise5.noise_type = FastNoiseLite.TYPE_CELLULAR
-	
-	noise1.frequency = 0.0001
-	noise2.frequency = 0.0005
-	noise3.frequency = 0.0025
-	noise4.frequency = 0.0125
-	noise5.frequency = 0.0625
-
-func generate_world():
-	for chunk_x in range(world_size.x):
-		for chunk_y in range(world_size.y):
-			for chunk_z in range(world_size.z):
-				var new_chunk: Chunk = Chunk.new(Vector3i(chunk_x, chunk_y, chunk_z))
-				new_chunk.generate_chunk([noise1, noise2, noise3,noise4,noise5])
-				new_chunk.place_chunk(self)
-				world[Vector3i(chunk_x, chunk_y, chunk_z)] = new_chunk
 
 func chunk_pos_to_block_pos(chunk_pos: Vector3i):
-	return Vector3i(chunk_pos * 16)
+	return Vector3i(chunk_pos * CHUNK_SIZE)
 
 func block_pos_to_chunk_pos(block_pos: Vector3i):
-	return Vector3i(block_pos / 16)
+	var x: int = floori(block_pos.x / float(CHUNK_SIZE))
+	var y: int = floori(block_pos.y / float(CHUNK_SIZE))
+	var z: int = floori(block_pos.z / float(CHUNK_SIZE))
+	return Vector3i(x, y, z)
 
 func spawn_player():
-	var y_level: int = 0
-	while y_level < 100:
-		y_level += 1
-		@warning_ignore("narrowing_conversion")
-		if get_cell_item(Vector3i(world_size.x/2.0,y_level,world_size.z/2.0)) == INVALID_CELL_ITEM:
-			break
 	var player = player_scene.instantiate()
 	add_child(player)
-	player.position = Vector3(world_size.x/2.0,y_level+1,world_size.z/2.0)
+	player.position = Vector3(0, 30, 0)
 	player_ref = player
 
 func save_chunk_to_file(filepath: String, chunk: Chunk):

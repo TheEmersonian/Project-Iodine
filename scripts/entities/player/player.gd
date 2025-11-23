@@ -1,6 +1,12 @@
 extends CharacterBody3D
 
+enum PlayerGamemode {
+	Survival,
+	Creative
+}
+
 @export var selected_position: Vector3
+@export var gamemode: PlayerGamemode = PlayerGamemode.Survival
 
 #cameras
 @onready var first_person_camera: Camera3D = $FirstPersonCamera
@@ -26,7 +32,7 @@ var reach: Statistic
 
 #all the little things
 var sprint_timer: float = 0
-var sprint_input_period: float = 12
+var sprint_input_period: float = 15
 var sprinting: bool = false
 var FOV: float = 75.0
 #var collision_friction: float = 0.025 #Unused: The amount you slow down per collision
@@ -91,19 +97,36 @@ func get_valid_slot(item: Item):
 func _physics_process(delta: float) -> void:
 	selected_position = Vector3.ZERO
 	update_ui()
+	if Input.is_action_just_pressed("Switch Gamemode"):
+		match gamemode:
+			PlayerGamemode.Survival:
+				gamemode = PlayerGamemode.Creative
+			PlayerGamemode.Creative:
+				gamemode = PlayerGamemode.Survival
 	# Add the gravity.
-	if not is_on_floor():
-		velocity += GRAVITY * delta
+	if !Input.is_action_pressed("Alternative Action Trigger"):
+		if not is_on_floor():
+			if gamemode == PlayerGamemode.Survival:
+				velocity += GRAVITY * delta
 	selected_item = hotbar.selected_item
 	check_for_ui_inputs()
 	if !inventory_open:
-		check_for_movement()
-		check_for_perspective_change()
-		check_for_interactions()
+		match gamemode:
+			PlayerGamemode.Survival:
+				check_for_movement()
+				check_for_perspective_change()
+				check_for_interactions()
+			PlayerGamemode.Creative:
+				creative_movement()
+				check_for_perspective_change()
+				check_for_interactions()
 	else:
 		display_mouse_item()
-	_push_away_rigid_bodies()
-	move_and_slide()
+	if gamemode == PlayerGamemode.Survival:
+		_push_away_rigid_bodies()
+		move_and_slide()
+	else:
+		position += velocity * delta
 
 #got this off the internet
 func _push_away_rigid_bodies():
@@ -128,6 +151,7 @@ func _push_away_rigid_bodies():
 
 func update_ui():
 	info_panel.displayed_position = global_position
+	info_panel.displayed_velocity = velocity
 
 func check_for_ui_inputs():
 	if !Input.is_action_pressed("Alternative Action Trigger"):
@@ -216,6 +240,39 @@ func check_for_movement():
 		velocity.x = move_toward(velocity.x, 0, SPEED)
 		velocity.z = move_toward(velocity.z, 0, SPEED)
 
+func creative_movement():
+	velocity *= 0.9
+	if Input.is_action_pressed("Jump"):
+		velocity.y = 10
+	if Input.is_action_pressed("Crouch"):
+		velocity.y = -10
+	# Handle Sprinting
+	sprint_timer -= 1.0
+	if Input.is_action_just_pressed("Move Foward"):
+		if sprint_timer > 0:
+			sprinting = true
+		else:
+			sprint_timer = sprint_input_period
+	elif !Input.is_action_pressed("Move Foward"):
+		sprinting = false
+	
+	# Get the input direction and handle the movement/deceleration.
+	var input_dir := Input.get_vector("Move Left", "Move Right", "Move Foward", "Move Backward")
+	var direction := (first_person_camera.transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	direction.x *= abs(direction.y)
+	direction.z *= abs(direction.y)
+	direction.y = 0
+	direction = direction.normalized()
+	var SPEED: float = 10.0
+	if sprinting:
+		SPEED *= 3.0
+	if direction:
+		velocity.x = direction.x * SPEED
+		velocity.z = direction.z * SPEED
+	else:
+		velocity.x = move_toward(velocity.x, 0, SPEED)
+		velocity.z = move_toward(velocity.z, 0, SPEED)
+
 func check_for_interactions():
 	interaction_raycast.target_position.z = -1 * reach.current_value()
 	if interaction_raycast.is_colliding():
@@ -230,6 +287,8 @@ func check_for_interactions():
 
 func check_for_pickup(hit_object: Node3D):
 	if Input.is_action_just_pressed("Pick Up"):
+		if hit_object == null:
+			return
 		if hit_object.has_method("pick_up"):
 			##Cannot be typed, must support both a bool and an item slot
 			var valid_slot = get_valid_slot(hit_object.item)

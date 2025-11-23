@@ -17,5 +17,8 @@ layout_mode = 2
 [node name="POSITION" type="Label" parent="."]
 layout_mode = 2
 
+[node name="VELOCITY&SPEED" type="Label" parent="."]
+layout_mode = 2
+
 [node name="CHUNK_POSITION" type="Label" parent="."]
 layout_mode = 2

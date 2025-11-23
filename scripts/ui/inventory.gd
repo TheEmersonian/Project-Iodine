@@ -1,6 +1,6 @@
 extends PanelContainer
 
-@onready var inventory_slot_container: GridContainer = $VBoxContainer/InventorySlotContainer
+@onready var inventory_slot_container: GridContainer = $TabContainer/Inventory/InventorySlotContainer
 
 @export var head_slot: EquipmentSlot
 @export var chest_slot: EquipmentSlot
@@ -21,27 +21,27 @@ func _ready() -> void:
 
 func setup_slots():
 	for i in range(inventory_slot_container.get_child_count()):
-		var slot: ItemSlot = get_node("VBoxContainer/InventorySlotContainer/ItemSlot" + str(1+i))
+		var slot: ItemSlot = get_node("TabContainer/Inventory/InventorySlotContainer/ItemSlot" + str(1+i))
 		slot.connect("clicked", inventory_slot_clicked)
-	head_slot = $VBoxContainer/HBoxContainer/EquipmentContainer1/HeadSlot
+	head_slot = $TabContainer/Inventory/HBoxContainer/EquipmentContainer1/HeadSlot
 	head_slot.connect("clicked", inventory_slot_clicked)
-	chest_slot = $VBoxContainer/HBoxContainer/EquipmentContainer1/ChestSlot
+	chest_slot = $TabContainer/Inventory/HBoxContainer/EquipmentContainer1/ChestSlot
 	chest_slot.connect("clicked", inventory_slot_clicked)
-	legs_slot = $VBoxContainer/HBoxContainer/EquipmentContainer1/LegsSlot
+	legs_slot = $TabContainer/Inventory/HBoxContainer/EquipmentContainer1/LegsSlot
 	legs_slot.connect("clicked", inventory_slot_clicked)
-	feet_slot = $VBoxContainer/HBoxContainer/EquipmentContainer1/FeetSlot
+	feet_slot = $TabContainer/Inventory/HBoxContainer/EquipmentContainer1/FeetSlot
 	feet_slot.connect("clicked", inventory_slot_clicked)
 	
-	neck_slot = $VBoxContainer/HBoxContainer/EquipmentContainer2/NeckSlot
+	neck_slot = $TabContainer/Inventory/HBoxContainer/EquipmentContainer2/NeckSlot
 	neck_slot.connect("clicked", inventory_slot_clicked)
-	back_slot = $VBoxContainer/HBoxContainer/EquipmentContainer2/BackSlot
+	back_slot = $TabContainer/Inventory/HBoxContainer/EquipmentContainer2/BackSlot
 	back_slot.connect("clicked", inventory_slot_clicked)
-	waist_slot = $VBoxContainer/HBoxContainer/EquipmentContainer2/WaistSlot
+	waist_slot = $TabContainer/Inventory/HBoxContainer/EquipmentContainer2/WaistSlot
 	waist_slot.connect("clicked", inventory_slot_clicked)
-	ankle_slot = $VBoxContainer/HBoxContainer/EquipmentContainer2/AnkleSlot
+	ankle_slot = $TabContainer/Inventory/HBoxContainer/EquipmentContainer2/AnkleSlot
 	ankle_slot.connect("clicked", inventory_slot_clicked)
 	
-	offhand_slot = $VBoxContainer/HBoxContainer/VBoxContainer/OffHand
+	offhand_slot = $TabContainer/Inventory/HBoxContainer/VBoxContainer/OffHand
 	offhand_slot.connect("clicked", inventory_slot_clicked)
 
 func get_empty_slot():
