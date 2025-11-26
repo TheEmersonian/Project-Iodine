@@ -4,11 +4,15 @@ extends GridMap
 
 @export var player_scene: PackedScene = preload("res://scenes/entities/player.tscn")
 
+#IMPORTANT: The gridmap's values are offset by 1 from the item ids.  Stone in the gridmap is 0, stone in item id's is 1
+
 
 ##DO NOT CHANGE THIS
 const CHUNK_SIZE: int = 16
 ##Region size in chunks
 const REGION_SIZE: Vector3i = Vector3(4, 16, 4)
+
+const NUM_CHUNKS_IN_REGION: int = REGION_SIZE.x * REGION_SIZE.y * REGION_SIZE.z
 
 @export var noise_parameters := {
 	"seed": 1,
@@ -20,7 +24,7 @@ const REGION_SIZE: Vector3i = Vector3(4, 16, 4)
 	"domain_warp_amplitude": 15,
 	"domain_warp_fractal_gain": 0.5,
 	"domain_warp_fractal_lacunarity": 3.0,
-	"domain_warp_fractal_octaves": 3,
+	"domain_warp_fractal_octaves": 8,
 	"domain_warp_fractal_type": FastNoiseLite.DOMAIN_WARP_FRACTAL_PROGRESSIVE,
 	"domain_warp_frequency": 0.01,
 	"domain_warp_type": FastNoiseLite.DOMAIN_WARP_SIMPLEX_REDUCED,
@@ -28,21 +32,55 @@ const REGION_SIZE: Vector3i = Vector3(4, 16, 4)
 
 var generation_queue := {}
 
+##Holds all active chunks, keyed by chunk positions
 var world := {}
+##Holds all regions with at least 1 active chunk, keyed by region positions
+var loaded_regions := {}
 
 var player_ref: CharacterBody3D
-var player_position: Vector3
+var player_position: Vector3            
 var player_chunk: Vector3i
+
+var spawn_position := Vector3i(32, 32, 32)
 ##Render Distance
-const R_D: int = 3
+const RENDER_DISTANCE: int = 3
+##Distance at which chunks unload
+const UNLOAD_DISTANCE: int = 4
 
 class Region:
-	var rpos: Vector3
-	var chunks: Dictionary = {}
+	var rpos: Vector3i
+	var chunks: Array = []
+	
+	func _init(region_position: Vector3i) -> void:
+		rpos = region_position
+		chunks.resize(NUM_CHUNKS_IN_REGION)
+	
+	static func region_pos_to_file_name(region_pos: Vector3i):
+		return "region_" + str(region_pos.x) + "." + str(region_pos.y) + "." + str(region_pos.z)
+	
+	static func local_chunk_pos_to_index(cpos: Vector3i):
+		return cpos.x + cpos.y*REGION_SIZE.x + cpos.z*REGION_SIZE.x*REGION_SIZE.y
+	
+	static func index_to_local_chunk_pos(i: int) -> Vector3i:
+		var x = i % REGION_SIZE.x
+		i /= REGION_SIZE.x
+		var y = i % REGION_SIZE.y
+		i /= REGION_SIZE.y
+		var z = i
+		return Vector3i(x, y, z)
+	
+	
+	func global_chunk_pos_to_local_chunk_pos(global_pos: Vector3i):
+		return global_pos - (rpos * REGION_SIZE)
 	
 	func add_chunk(chunk: Chunk):
-		var chunk_position_in_region: Vector3i = Vector3i(chunk.cpos.x % REGION_SIZE.x, chunk.cpos.y % REGION_SIZE.y, chunk.cpos.z % REGION_SIZE.z)
-		chunks[chunk_position_in_region] = chunk
+		var chunk_position_in_region: Vector3i = global_chunk_pos_to_local_chunk_pos(chunk.cpos)
+		chunks[local_chunk_pos_to_index(chunk_position_in_region)] = chunk
+	##THIS FUNCTION EXPECTS LOCAL CHUNK COORDINATES
+	func get_chunk(local_chunk_pos: Vector3i):
+		var index: int = local_chunk_pos_to_index(local_chunk_pos)
+		return chunks[index]
+
 
 class Chunk:
 	var cpos: Vector3i
@@ -60,6 +98,15 @@ class Chunk:
 			blocks.resize(CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE)
 		else:
 			blocks = chunk_blocks
+	
+	func serialize():
+		return {
+			"blocks": blocks,
+			"cpos": [cpos.x, cpos.y, cpos.z],
+		}
+	
+	func deserialize(data):
+		blocks = data["blocks"]
 	
 	func cpos_to_bpos(chunk_position: Vector3i):
 		return chunk_position*16
@@ -122,13 +169,10 @@ class Chunk:
 						var dirt_height: int = height-(height/10.0)
 						if tpos.y > dirt_height:
 							set_block(in_chunk_position, dirt)
-						if cpos.y == 0:
-							if tpos.y <= -30:
-								set_block(in_chunk_position, bedrock)
-							else:
-								set_block(in_chunk_position, deep_stone)
-						elif tpos.y <= height*0.5:
+						elif tpos.y <= height-abs(noise_value*noise_value):
 							set_block(in_chunk_position, deep_stone)
+						elif tpos.y <= (height/2.0)-height*height:
+							set_block(in_chunk_position, bedrock)
 						else:
 							set_block(in_chunk_position, stone)
 					else:
@@ -202,8 +246,9 @@ class Chunk:
 
 
 func _ready() -> void:
-	load_new_chunks(calculate_loaded_chunks(Vector3i(0,0,0)))
 	spawn_player()
+	load_new_chunks(calculate_loaded_chunks(block_pos_to_chunk_pos(spawn_position)))
+	
 
 func _physics_process(_delta: float) -> void:
 	manage_block_overlay()
@@ -212,9 +257,18 @@ func _physics_process(_delta: float) -> void:
 		player_chunk = floor(player_position/CHUNK_SIZE)
 		var loaded_chunks_list: Array[Vector3i] = calculate_loaded_chunks(player_chunk)
 		load_new_chunks(loaded_chunks_list)
-		unload_old_chunks(loaded_chunks_list)
+		var keep_loaded_chunks_list: Array[Vector3i] = calculate_loaded_chunks(player_chunk, UNLOAD_DISTANCE)
+		unload_old_chunks(keep_loaded_chunks_list)
 
 func _process(_delta: float) -> void:
+	generate_chunks_efficiently(10)
+	var regions_queued_for_unloading: Array[Vector3i] = regions_for_unloading()
+	unload_chunks_efficiently(10, regions_queued_for_unloading)
+#save the region to the file
+#		var filepath: String = GameManager.save_folder + Region.region_pos_to_file_name(rpos) + ".json"
+#		save_region_to_file(filepath, region)
+
+func generate_chunks_efficiently(msec_time: int):
 	var start_time: float = Time.get_ticks_msec()
 	for i in generation_queue.keys():
 		var current_chunk: Chunk = generation_queue[i]
@@ -222,7 +276,31 @@ func _process(_delta: float) -> void:
 		world[i] = current_chunk
 		current_chunk.place_chunk_fast(self)
 		generation_queue.erase(i)
-		if Time.get_ticks_msec() - start_time > 10:
+		if Time.get_ticks_msec() - start_time > msec_time:
+			return
+
+func regions_for_unloading() -> Array[Vector3i]:
+	var regionkeys = loaded_regions.keys()
+	var unloaded_regions: Array[Vector3i] = []
+	for k in regionkeys:
+		var region: Region = loaded_regions[k]
+		var fully_unloaded: bool = true
+		for c in region.chunks:
+			if world.has(c):
+				fully_unloaded = false
+				break
+		if fully_unloaded:
+			continue
+		unloaded_regions.append(k)
+	return unloaded_regions
+
+func unload_chunks_efficiently(msec_time: int, region_positions: Array[Vector3i]):
+	var start_time: float = Time.get_ticks_msec()
+	for rpos in region_positions:
+		var current_region: Region = loaded_regions[rpos]
+		save_region_to_file(GameManager.save_folder + Region.region_pos_to_file_name(rpos), current_region)
+		loaded_regions.erase(rpos)
+		if Time.get_ticks_msec() - start_time > msec_time:
 			return
 
 func manage_block_overlay():
@@ -238,27 +316,81 @@ func has_player_moved() -> bool:
 	return true
 
 func load_new_chunks(loaded_chunks_list: Array[Vector3i]):
-	for l in loaded_chunks_list:
-		if world.has(l):
+	#iterate through all the loaded chunks, if they are in world ignore them, if they are in the queue, ignore them
+	for cpos in loaded_chunks_list:
+		if world.has(cpos):
 			continue
-		elif generation_queue.has(l):
+		elif generation_queue.has(cpos):
 			continue
+		#compute the region
+		var rpos: Vector3i = chunk_pos_to_region_pos(cpos)
+		var region: Region = null
+		#if the region is already loaded, get the rest of it's data, if it's not, get it from a file
+		if loaded_regions.has(rpos):
+			region = loaded_regions[rpos]
 		else:
-			var new_chunk: Chunk = Chunk.new(l)
-			generation_queue[l] = new_chunk
+			var filepath: String = GameManager.save_folder + Region.region_pos_to_file_name(rpos)
+			region = load_region_from_file(filepath)
+			#if its not in a file initialize it
+			if region == null:
+				region = Region.new(rpos)
+			loaded_regions[rpos] = region
+		
+		#see if the chunk is already in the region
+		var local_pos: Vector3i = region.global_chunk_pos_to_local_chunk_pos(cpos)
+		var stored_chunk: Chunk = region.get_chunk(local_pos)
+		
+		if stored_chunk != null:
+			world[cpos] = stored_chunk
+			stored_chunk.place_chunk_fast(self)
+		else:
+			var new_chunk: Chunk = Chunk.new(cpos)
+			generation_queue[cpos] = new_chunk
+		
 
 func unload_old_chunks(loaded_chunks_list):
-	for l in loaded_chunks_list:
-		if !world.has(l):
-			pass
+	var worldkeys: Array = world.keys()
 	
+	for cpos in worldkeys:
+		#if the chunk should still be loaded then keep it
+		if loaded_chunks_list.has(cpos):
+			continue
+		
+		#Save the chunk, the region pos, and prepare the region object
+		var chunk: Chunk = world[cpos]
+		var rpos: Vector3i = chunk_pos_to_region_pos(cpos)
+		var region: Region
+		
+		#if the region is already in memory, 
+		if loaded_regions.has(rpos):
+			region = loaded_regions[rpos]
+		else:
+			region = Region.new(rpos)
+			loaded_regions[rpos] = region
+		
+		#add the chunk
+		region.add_chunk(chunk)
+		
+		#remove the chunk from the world
+		unload_chunk_from_world(cpos)
+
+func unload_chunk_from_world(cpos):
+	world.erase(cpos)
+	var startpos: Vector3i = chunk_pos_to_block_pos(cpos)
+	var endpos: Vector3i = startpos + Vector3i(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE)
+	var cells: Array[Vector3i] = get_used_cells()
+	for c in cells:
+		if c.x >= startpos.x and c.y >= startpos.y and c.z >= startpos.z:
+			if c.x < endpos.x and c.y < endpos.y and c.z < endpos.z:
+				set_cell_item(c, -1)
+
 
 ##c = center
-func calculate_loaded_chunks(c: Vector3i) -> Array[Vector3i]:
+func calculate_loaded_chunks(c: Vector3i, radius: int = RENDER_DISTANCE) -> Array[Vector3i]:
 	var loaded_chunks: Array[Vector3i]
-	for x in range(c.x-R_D, c.x+R_D):
-		for y in range(c.y-R_D, c.y+R_D):
-			for z in range(c.z-R_D, c.z+R_D):
+	for x in range(c.x-radius, c.x+radius):
+		for y in range(c.y-radius, c.y+radius):
+			for z in range(c.z-radius, c.z+radius):
 				loaded_chunks.append(Vector3i(x, y, z))
 	return loaded_chunks
 
@@ -280,19 +412,19 @@ func destroy_block(world_coordinate: Vector3, drop_block: bool = true):
 	var cbpos: Vector3i = block_coordinate - chunk_pos_to_block_pos(chunk_coordinate)
 	print("Destroying block in position: " + str(block_coordinate) + " at chunk: " + str(chunk_coordinate) + " local pos: " + str(cbpos))
 	var chunk: Chunk = world[chunk_coordinate]
-	chunk.set_block(cbpos, -1)
-	
-	regenerate_rectangular_prism(block_coordinate-Vector3i.ONE, Vector3i.ONE * 3)
 	print("Current Block: " + str(chunk.get_block(cbpos)))
-		
-	#if drop_block:
-		##var block_id: int = chunk.blocks[chunk.bpos_to_index(cbpos)]
-		##var block_item: Item = Item.new(ItemProcesser.id_to_item(block_id), block_id, 1)
-		##var dropped_item = DroppedItem.new(block_item)
-		##add_child(dropped_item)
-		##dropped_item.global_position = world_coordinate
-		#dropped_item.give_random_jump()
-	#set_cell_item(block_coordinate, -1)
+	
+	if drop_block:
+		var block_id: int = chunk.get_block(cbpos)
+		var block_item: Item = Item.new(BlockRegistry.get_block(block_id-1).block_name, block_id, 1)
+		var dropped_item = DroppedItem.new(block_item)
+		add_child(dropped_item)
+		dropped_item.global_position = world_coordinate
+		dropped_item.give_random_jump()
+	
+	chunk.set_block(cbpos, -1)
+	regenerate_rectangular_prism(block_coordinate-Vector3i.ONE*2, Vector3i.ONE * 5)
+	set_cell_item(block_coordinate, -1)
 
 func place_block(world_coordinate: Vector3, item_id: int):
 	var map_coordinate: Vector3i = local_to_map(world_coordinate)
@@ -301,7 +433,7 @@ func place_block(world_coordinate: Vector3, item_id: int):
 	var chunk: Chunk = world[chunk_coordinate]
 	chunk.set_block(cbpos, item_id)
 	
-	var def = BlockRegistry.get_block(item_id)
+	var def = BlockRegistry.get_block(item_id-1)
 	if def.function:
 		chunk.create_tile_entity(map_coordinate, def.function)
 	
@@ -311,6 +443,11 @@ func place_block(world_coordinate: Vector3, item_id: int):
 func generate_block(pos: Vector3i, index: int):
 	set_cell_item(pos, index)
 
+func chunk_pos_to_region_pos(chunk_pos: Vector3i):
+	var x = floori(chunk_pos.x / float(REGION_SIZE.x))
+	var y = floori(chunk_pos.y / float(REGION_SIZE.y))
+	var z = floori(chunk_pos.z / float(REGION_SIZE.z))
+	return Vector3i(x, y, z)
 
 func chunk_pos_to_block_pos(chunk_pos: Vector3i):
 	return Vector3i(chunk_pos * CHUNK_SIZE)
@@ -324,72 +461,57 @@ func block_pos_to_chunk_pos(block_pos: Vector3i):
 func spawn_player():
 	var player = player_scene.instantiate()
 	add_child(player)
-	player.position = Vector3(0, 30, 0)
+	player.position = spawn_position
 	player_ref = player
 
-func save_chunk_to_file(filepath: String, chunk: Chunk):
-	#check if the path exists
-	if not FileAccess.file_exists(filepath):
-		print("Error: No file at path")
-		return
-	#save the chunk in a specific structure with the position easy to reach
-	var file = FileAccess.open(filepath, FileAccess.WRITE)
-	var json = {
-		"pos": [chunk.cpos.x, chunk.cpos.y, chunk.cpos.z],
-		"data": JSON.stringify(chunk)
+func save_region_to_file(filepath: String, region: Region):
+	var chunks_arr = []
+	for chunk in region.chunks:
+		if chunk == null:
+			continue
+		chunks_arr.append({
+			"pos": [chunk.cpos.x, chunk.cpos.y, chunk.cpos.z],
+		"data": chunk.serialize()        
+		})
+	var region_dict = {
+		"rpos": [region.rpos.x, region.rpos.y, region.rpos.z],
+		"chunks": chunks_arr
 	}
-	#store the line and close the file, this only appends, which is why we need update_chunk_in_file()
-	file.store_line(json)
-	file.close()
-
-
-func load_chunk_from_file(filepath: String, cpos: Vector3i):
-	#check if the file exists
-	if not FileAccess.file_exists(filepath):
-		return {}
-	#go through the lines, skipping empty ones
-	var file = FileAccess.open(filepath, FileAccess.READ)
-	while file.get_position() < file.get_length():
-		var line: String = file.get_line()
-		if line.is_empty():
-			continue
-		
-		var parsed_line = JSON.parse_string(line)
-		if parsed_line == null:
-			continue
-		var p = parsed_line.get("pos")
-		if p and Vector3i(p[0], p[1], p[2]) == cpos:
-			file.close()
-			return parsed_line["data"]
-	file.close()
-	return {}
-
-func update_chunk_in_file(filepath: String, chunk: Chunk):
-	if not FileAccess.file_exists(filepath):
+	var file = FileAccess.open(filepath, FileAccess.WRITE)
+	if file == null:
+		print("Failed to open file, Error Code: " + str(FileAccess.get_open_error()))
+		FileAccess.get_open_error()
 		return
-	
-	var file = FileAccess.open(filepath, FileAccess.READ)
-	var stored_chunks: Array[String] = []
-	var target_chunk_pos: Vector3i = chunk.cpos
-	
-	while file.get_position() < file.get_length():
-		var line: String = file.get_line()
-		if line.is_empty():
-			continue
-		
-		var parsed_line = JSON.parse_string(line)
-		if parsed_line:
-			var p: Array[int] = parsed_line.get("pos")
-			if p and Vector3i(p[0], p[1], p[2]) == target_chunk_pos:
-				parsed_line["data"] = JSON.stringify(chunk)
-				line = JSON.stringify(parsed_line)
-		stored_chunks.append(line)
+	file.store_string(JSON.stringify(region_dict))
+	print("Saved region: " + str(region.rpos) + " to file: " + filepath)
 	file.close()
+
+
+func load_region_from_file(filepath: String) -> Region:
+	if not FileAccess.file_exists(filepath):
+		return null
+
+	var file = FileAccess.open(filepath, FileAccess.READ)
+	var text = file.get_as_text()
+	file.close()
+
+	var obj = JSON.parse_string(text)
+	if obj == null:
+		return null
+
+	var r = obj["rpos"]
+	var region = Region.new(Vector3i(r[0], r[1], r[2]))
 	
-	var out = FileAccess.open(filepath, FileAccess.WRITE)
-	for c in stored_chunks:
-		out.store_line(c)
-	out.close()
+	for chunk_data in obj["chunks"]:
+		var p = chunk_data["pos"]
+		var d = chunk_data["data"]
+
+		var chunk = Chunk.new(Vector3i(p[0], p[1], p[2]))
+		chunk.deserialize(d)
+		region.add_chunk(chunk)
+	
+	return region
+
 
 
 #end

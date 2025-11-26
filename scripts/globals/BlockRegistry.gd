@@ -18,14 +18,14 @@ enum GeneratedRotationType {
 }
 
 class BlockDef:
-	var name: String
-	var solid: bool
+	var block_name: String
+	var is_solid: bool
 	var generated_rotation: GeneratedRotationType
 	var function: Script = null
 	var default_metadata = null
-	func _init(block_name: String, is_solid: bool = true, generated_orientation: GeneratedRotationType = GeneratedRotationType.Fixed, block_function: Script = null) -> void:
-		name = block_name
-		solid = is_solid
+	func _init(block_name: String, is_block_solid: bool = true, generated_orientation: GeneratedRotationType = GeneratedRotationType.Fixed, block_function: Script = null) -> void:
+		block_name = block_name
+		is_solid = is_block_solid
 		generated_rotation = generated_orientation
 		function = block_function
 
@@ -36,7 +36,8 @@ func register_block(id: int, def: BlockDef):
 	blocks[id] = def
 
 func get_block(id: int):
-	return blocks[id]
+	if blocks.keys().has(id):
+		return blocks[id]
 
 func _ready() -> void:
 	register_block(0, BlockDef.new("stone"))

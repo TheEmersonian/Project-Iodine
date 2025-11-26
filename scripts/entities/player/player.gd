@@ -95,6 +95,8 @@ func get_valid_slot(item: Item):
 	return valid_slot
 
 func _physics_process(delta: float) -> void:
+	if Engine.get_physics_frames() < 500:
+		return
 	selected_position = Vector3.ZERO
 	update_ui()
 	if Input.is_action_just_pressed("Switch Gamemode"):
@@ -104,10 +106,9 @@ func _physics_process(delta: float) -> void:
 			PlayerGamemode.Creative:
 				gamemode = PlayerGamemode.Survival
 	# Add the gravity.
-	if !Input.is_action_pressed("Alternative Action Trigger"):
-		if not is_on_floor():
-			if gamemode == PlayerGamemode.Survival:
-				velocity += GRAVITY * delta
+	if not is_on_floor():
+		if gamemode == PlayerGamemode.Survival:
+			velocity += GRAVITY * delta
 	selected_item = hotbar.selected_item
 	check_for_ui_inputs()
 	if !inventory_open:

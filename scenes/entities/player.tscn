@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://bfxa5pid3lbdu"]
+[gd_scene load_steps=12 format=3 uid="uid://bfxa5pid3lbdu"]
 
 [ext_resource type="Script" uid="uid://d3w22ngjvl3fh" path="res://scripts/entities/player/player.gd" id="1_08t41"]
 [ext_resource type="PackedScene" uid="uid://b0gob3vo1d03d" path="res://scenes/ui/crosshair.tscn" id="2_5u6hq"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://gqnw4wg66ygh" path="res://scenes/ui/inventory.tscn" id="4_42nxq"]
 [ext_resource type="PackedScene" uid="uid://dhrpv57y4f84o" path="res://scenes/ui/health_bar.tscn" id="4_ss7kx"]
 [ext_resource type="PackedScene" uid="uid://dt6ok5fgnxgr2" path="res://scenes/ui/floating_item.tscn" id="6_d4qa6"]
+[ext_resource type="PackedScene" uid="uid://22pjlktle5o1" path="res://scenes/ui/pause_menu.tscn" id="8_dnykm"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_08t41"]
 size = Vector3(0.7, 1.8, 0.7)
@@ -125,6 +126,9 @@ offset_right = 932.0
 offset_bottom = 77.0
 grow_horizontal = 1
 grow_vertical = 1
+
+[node name="Pause Menu" parent="UI" instance=ExtResource("8_dnykm")]
+visible = false
 
 [connection signal="slot_clicked" from="UI/VBoxContainer/Inventory" to="." method="_on_inventory_slot_clicked"]
 [connection signal="selected_item_changed" from="UI/Hotbar" to="." method="_on_hotbar_selected_item_changed"]
