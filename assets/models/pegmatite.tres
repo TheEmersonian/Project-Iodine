@@ -1,0 +1,19 @@
+[gd_resource type="BoxMesh" load_steps=4 format=3 uid="uid://dc8h5bf05i1l7"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_niiux"]
+load_path = "res://.godot/imported/pegmatite.png-0ab80dd2ea39ac8f93d8d7f0b3aac81f.s3tc.ctex"
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_0mpv1"]
+load_path = "res://.godot/imported/foidolite.png-1fbdf2a4a142364eae90a76f668472e6.s3tc.ctex"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1cmfl"]
+albedo_texture = SubResource("CompressedTexture2D_niiux")
+metallic_specular = 0.0
+clearcoat_roughness = 0.0
+clearcoat_texture = SubResource("CompressedTexture2D_0mpv1")
+texture_filter = 0
+texture_repeat = false
+
+[resource]
+lightmap_size_hint = Vector2i(14, 21)
+material = SubResource("StandardMaterial3D_1cmfl")

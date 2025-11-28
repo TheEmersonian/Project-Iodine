@@ -48,7 +48,7 @@ func update_item():
 	if stored_item.item_id != 0:
 		slot_count.text = str(stored_item.item_count)
 		slot_count.show()
-		item_display.texture = ItemProcesser.id_to_icon(stored_item.item_id)
+		item_display.texture = BlockRegistry.get_block_from_id(stored_item.item_id).icon
 		#print("Texture path: " + str(item_display.texture.resource_path))
 		emit_signal("item_changed")
 	else:

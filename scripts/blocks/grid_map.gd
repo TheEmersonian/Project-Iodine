@@ -4,6 +4,7 @@ extends GridMap
 
 @export var player_scene: PackedScene = preload("res://scenes/entities/player.tscn")
 
+@export var heightmap: Image
 #IMPORTANT: The gridmap's values are offset by 1 from the item ids.  Stone in the gridmap is 0, stone in item id's is 1
 
 
@@ -16,21 +17,27 @@ const NUM_CHUNKS_IN_REGION: int = REGION_SIZE.x * REGION_SIZE.y * REGION_SIZE.z
 
 @export var noise_parameters := {
 	"seed": 1,
-	"octaves": 5,
+	"base_height": 128,
+	"octaves": 13,
 	"base_frequency": 0.01,
-	"fractal_gain": 0.3,
-	"amplitude": 3.4,
+	"fractal_gain": 0.03,
+	"amplitude": 24.6,
 	"domain_warp_enabled": true,
 	"domain_warp_amplitude": 15,
 	"domain_warp_fractal_gain": 0.5,
 	"domain_warp_fractal_lacunarity": 3.0,
 	"domain_warp_fractal_octaves": 8,
-	"domain_warp_fractal_type": FastNoiseLite.DOMAIN_WARP_FRACTAL_PROGRESSIVE,
+	"domain_warp_fractal_type": FastNoiseLite.DOMAIN_WARP_FRACTAL_INDEPENDENT,
 	"domain_warp_frequency": 0.01,
 	"domain_warp_type": FastNoiseLite.DOMAIN_WARP_SIMPLEX_REDUCED,
+	"continent_octaves": 3,
+	"continent_frequency": 0.0005,
+	"continent_fractal_gain": 0.0004,
+	"continent_amplitude": 2.6,
 }
 
 var generation_queue := {}
+var placement_queue := []
 
 ##Holds all active chunks, keyed by chunk positions
 var world := {}
@@ -41,7 +48,8 @@ var player_ref: CharacterBody3D
 var player_position: Vector3            
 var player_chunk: Vector3i
 
-var spawn_position := Vector3i(32, 32, 32)
+var spawn_position := Vector3i(32, 160, 32)
+
 ##Render Distance
 const RENDER_DISTANCE: int = 3
 ##Distance at which chunks unload
@@ -108,6 +116,9 @@ class Chunk:
 	func deserialize(data):
 		blocks = data["blocks"]
 	
+	func global_block_pos_to_local_block_pos(global_pos: Vector3i):
+		return global_pos - (cpos * CHUNK_SIZE)
+	
 	func cpos_to_bpos(chunk_position: Vector3i):
 		return chunk_position*16
 	
@@ -126,55 +137,61 @@ class Chunk:
 		var index: int = bpos_to_index(pos)
 		blocks.set(index, id)
 	
-	func get_block(pos: Vector3i):
-		return blocks[bpos_to_index(pos)]
+	func get_block(local_pos: Vector3i) -> int:
+		return blocks[bpos_to_index(local_pos)]
 	
 	func create_tile_entity(pos: Vector3i, script: Script):
 		var tile_entity = script.new(self, pos)
 		tile_entities[pos] = tile_entity
 	
 	func generate_chunk(noise_parameters: Dictionary):
-		var noise: FastNoiseLite = FastNoiseLite.new()
-		noise.seed = noise_parameters.seed
-		noise.fractal_octaves = noise_parameters.octaves
-		noise.frequency = noise_parameters.base_frequency
-		noise.fractal_gain = noise_parameters.fractal_gain
-		noise.domain_warp_enabled = noise_parameters.domain_warp_enabled
-		noise.domain_warp_amplitude = noise_parameters.domain_warp_amplitude
-		noise.domain_warp_fractal_gain = noise_parameters.domain_warp_fractal_gain
-		noise.domain_warp_fractal_lacunarity = noise_parameters.domain_warp_fractal_lacunarity
-		noise.domain_warp_fractal_octaves = noise_parameters.domain_warp_fractal_octaves
-		noise.domain_warp_fractal_type = noise_parameters.domain_warp_fractal_type
-		noise.domain_warp_frequency = noise_parameters.domain_warp_frequency
-		noise.domain_warp_type = noise_parameters.domain_warp_type
-		var grass: int = ItemProcesser.item_to_id("dirt_with_grass")
-		var dirt: int = ItemProcesser.item_to_id("dirt")
-		var stone: int = ItemProcesser.item_to_id("stone")
-		var deep_stone: int = ItemProcesser.item_to_id("deep_stone")
-		var bedrock: int = ItemProcesser.item_to_id("bedrock")
+		var local_noise: FastNoiseLite = FastNoiseLite.new()
+		local_noise.seed = noise_parameters.seed
+		local_noise.fractal_octaves = noise_parameters.octaves
+		local_noise.frequency = noise_parameters.base_frequency
+		local_noise.fractal_gain = noise_parameters.fractal_gain
+		local_noise.domain_warp_enabled = noise_parameters.domain_warp_enabled
+		local_noise.domain_warp_amplitude = noise_parameters.domain_warp_amplitude
+		local_noise.domain_warp_fractal_gain = noise_parameters.domain_warp_fractal_gain
+		local_noise.domain_warp_fractal_lacunarity = noise_parameters.domain_warp_fractal_lacunarity
+		local_noise.domain_warp_fractal_octaves = noise_parameters.domain_warp_fractal_octaves
+		local_noise.domain_warp_fractal_type = noise_parameters.domain_warp_fractal_type
+		local_noise.domain_warp_frequency = noise_parameters.domain_warp_frequency
+		local_noise.domain_warp_type = noise_parameters.domain_warp_type
+		var continent_noise: FastNoiseLite = FastNoiseLite.new()
+		continent_noise.seed = local_noise.seed + 1
+		continent_noise.fractal_octaves = noise_parameters.continent_octaves
+		continent_noise.fractal_gain = noise_parameters.continent_fractal_gain
+		continent_noise.frequency = noise_parameters.continent_frequency
+		var healthy_grass: int = 103
+		var dirt: int = 102
+		var soil: int = 101
+		var granite: int = 1
 		var chunk_offset: Vector3i = cpos_to_bpos(cpos)
 		for x in range(CHUNK_SIZE):
 			for z in range(CHUNK_SIZE):
 				var noise_position: Vector3i = chunk_offset + Vector3i(x, 0, z)
-				var noise_value: float = noise.get_noise_2d(noise_position.x, noise_position.z) * noise_parameters.amplitude
-				var height: int = 5 + abs(round(noise_value*10.0))
+				var continent_value: float = continent_noise.get_noise_2d(noise_position.x, noise_position.z)
+				var noise_value: float = local_noise.get_noise_2d(noise_position.x, noise_position.z) * noise_parameters.amplitude
+				var final_value: float = continent_value + (noise_value*continent_value)
+				var height: int = noise_parameters.base_height + abs(round(final_value))
+				@warning_ignore("narrowing_conversion")
+				var dirt_height: int = height-(height/10.0)
+				@warning_ignore("narrowing_conversion")
+				var soil_height: int = height-(log(height)/10.0)
 				for y in range(CHUNK_SIZE):
 					var in_chunk_position: Vector3i = Vector3i(x, y, z)
 					var tpos: Vector3i = chunk_offset + in_chunk_position
 					
 					if tpos.y == height:
-						set_block(in_chunk_position, grass)
+						set_block(in_chunk_position, healthy_grass)
 					elif tpos.y < height:
-						@warning_ignore("narrowing_conversion")
-						var dirt_height: int = height-(height/10.0)
-						if tpos.y > dirt_height:
+						if tpos.y > soil_height:
+								set_block(in_chunk_position, soil)
+						elif tpos.y > dirt_height:
 							set_block(in_chunk_position, dirt)
-						elif tpos.y <= height-abs(noise_value*noise_value):
-							set_block(in_chunk_position, deep_stone)
-						elif tpos.y <= (height/2.0)-height*height:
-							set_block(in_chunk_position, bedrock)
 						else:
-							set_block(in_chunk_position, stone)
+							set_block(in_chunk_position, granite)
 					else:
 						set_block(in_chunk_position, -1)
 	
@@ -198,36 +215,44 @@ class Chunk:
 		#	print("checking exposure of pos: " + str(pos) + " is within chunk: " + str(AABB(worldpos, Vector3i.ONE*CHUNK_SIZE).has_point(worldpos+pos)))
 		#	return true
 		
+		if pos.x == 0 or pos.x == 15:
+			return true
+		if pos.y == 0 or pos.y == 15:
+			return true
+		if pos.z == 0 or pos.z == 15:
+			return true
+		
+		
 		if blocks[bpos_to_index(pos)] == -1:
 			return true
-		if pos.y != 15:
-			var top_block: int = blocks[bpos_to_index(pos + Vector3i(0, 1, 0))]
-			if top_block == -1:
-				return true
+		
+		var top_block: int = blocks[bpos_to_index(pos + Vector3i(0, 1, 0))]
+		if top_block == -1:
+			return true
 		#if not on the bottom look for air on the bottom
-		if pos.y != 0:
-			var bottom_block: int = blocks[bpos_to_index(pos + Vector3i(0, -1, 0))]
-			if bottom_block == -1:
-				return true
+		
+		var bottom_block: int = blocks[bpos_to_index(pos + Vector3i(0, -1, 0))]
+		if bottom_block == -1:
+			return true
 		#if not on the side look for air on the side
-		if pos.x != 15:
-			var left_block: int = blocks[bpos_to_index(pos + Vector3i(1, 0, 0))]
-			if left_block == -1:
-				return true
+		
+		var left_block: int = blocks[bpos_to_index(pos + Vector3i(1, 0, 0))]
+		if left_block == -1:
+			return true
 		#if not on the other side look for air on the other side:
-		if pos.x != 0:
-			var right_block: int = blocks[bpos_to_index(pos + Vector3i(-1, 0, 0))]
-			if right_block == -1:
-				return true
+		
+		var right_block: int = blocks[bpos_to_index(pos + Vector3i(-1, 0, 0))]
+		if right_block == -1:
+			return true
 		#same checks but for the z axis
-		if pos.z != 15:
-			var left_block: int = blocks[bpos_to_index(pos + Vector3i(0, 0, 1))]
-			if left_block == -1:
-				return true
-		if pos.z != 0:
-			var right_block: int = blocks[bpos_to_index(pos + Vector3i(0, 0, -1))]
-			if right_block == -1:
-				return true
+		
+		var left_block2: int = blocks[bpos_to_index(pos + Vector3i(0, 0, 1))]
+		if left_block2 == -1:
+			return true
+		
+		var right_block2: int = blocks[bpos_to_index(pos + Vector3i(0, 0, -1))]
+		if right_block2 == -1:
+			return true
 		return false
 	
 	func place_chunk_fast(grid: GridMap):
@@ -237,12 +262,12 @@ class Chunk:
 				continue
 			var pos: Vector3i = index_to_bpos(i)
 			if is_exposed(pos):
-				grid.set_cell_item(chunk_offset + pos, blocks[i]-1)
+				var blockdef = BlockRegistry.get_block_from_id(blocks[i])
+				grid.set_cell_item(chunk_offset + pos, blockdef.meshlib_id)
 	
 	func regenerate_chunk_visual(grid: GridMap, pos: Vector3i):
 		if is_exposed(pos):
 			grid.set_cell_item(pos + cpos_to_bpos(cpos), blocks[bpos_to_index(pos)]-1)
-
 
 
 func _ready() -> void:
@@ -259,11 +284,13 @@ func _physics_process(_delta: float) -> void:
 		load_new_chunks(loaded_chunks_list)
 		var keep_loaded_chunks_list: Array[Vector3i] = calculate_loaded_chunks(player_chunk, UNLOAD_DISTANCE)
 		unload_old_chunks(keep_loaded_chunks_list)
+		regenerate_rectangular_prism(Vector3i(player_position)-Vector3i.ONE, Vector3i.ONE*3)
 
 func _process(_delta: float) -> void:
 	generate_chunks_efficiently(10)
+	place_chunks_efficiently(10)
 	var regions_queued_for_unloading: Array[Vector3i] = regions_for_unloading()
-	unload_chunks_efficiently(10, regions_queued_for_unloading)
+	unload_regions_efficiently(10, regions_queued_for_unloading)
 #save the region to the file
 #		var filepath: String = GameManager.save_folder + Region.region_pos_to_file_name(rpos) + ".json"
 #		save_region_to_file(filepath, region)
@@ -274,34 +301,47 @@ func generate_chunks_efficiently(msec_time: int):
 		var current_chunk: Chunk = generation_queue[i]
 		current_chunk.generate_chunk(noise_parameters)
 		world[i] = current_chunk
-		current_chunk.place_chunk_fast(self)
 		generation_queue.erase(i)
+		placement_queue.append(i)
 		if Time.get_ticks_msec() - start_time > msec_time:
 			return
+
+func place_chunks_efficiently(msec_time: int):
+	var start_time: float = Time.get_ticks_msec()
+	for i in placement_queue:
+		var current_chunk: Chunk = world[i]
+		current_chunk.place_chunk_fast(self)
+		placement_queue.erase(i)
+		if Time.get_ticks_msec() - start_time > msec_time:
+			return
+
 
 func regions_for_unloading() -> Array[Vector3i]:
 	var regionkeys = loaded_regions.keys()
 	var unloaded_regions: Array[Vector3i] = []
 	for k in regionkeys:
 		var region: Region = loaded_regions[k]
-		var fully_unloaded: bool = true
 		for c in region.chunks:
 			if world.has(c):
-				fully_unloaded = false
-				break
-		if fully_unloaded:
-			continue
+				continue
 		unloaded_regions.append(k)
+	#if unloaded_regions.size() > 0:
+	#	print("Setting " + str(unloaded_regions.size()) + " Regions to be unloaded")
 	return unloaded_regions
 
-func unload_chunks_efficiently(msec_time: int, region_positions: Array[Vector3i]):
+func unload_regions_efficiently(msec_time: int, region_positions: Array[Vector3i]):
 	var start_time: float = Time.get_ticks_msec()
 	for rpos in region_positions:
 		var current_region: Region = loaded_regions[rpos]
-		save_region_to_file(GameManager.save_folder + Region.region_pos_to_file_name(rpos), current_region)
+		save_region_to_file(GameManager.save_folder + Region.region_pos_to_file_name(rpos) + ".json", current_region)
 		loaded_regions.erase(rpos)
 		if Time.get_ticks_msec() - start_time > msec_time:
 			return
+
+func unload_all_regions():
+	for r in loaded_regions:
+		save_region_to_file(GameManager.save_folder + Region.region_pos_to_file_name(r.rpos) + ".json", r)
+	loaded_regions.clear()
 
 func manage_block_overlay():
 	block_overlay.clear()
@@ -329,10 +369,12 @@ func load_new_chunks(loaded_chunks_list: Array[Vector3i]):
 		if loaded_regions.has(rpos):
 			region = loaded_regions[rpos]
 		else:
-			var filepath: String = GameManager.save_folder + Region.region_pos_to_file_name(rpos)
+			var filepath: String = GameManager.save_folder + Region.region_pos_to_file_name(rpos) + ".json"
 			region = load_region_from_file(filepath)
+			print("Region from file is: " + str(region))
 			#if its not in a file initialize it
 			if region == null:
+				print("Region null, making new region")
 				region = Region.new(rpos)
 			loaded_regions[rpos] = region
 		
@@ -342,7 +384,7 @@ func load_new_chunks(loaded_chunks_list: Array[Vector3i]):
 		
 		if stored_chunk != null:
 			world[cpos] = stored_chunk
-			stored_chunk.place_chunk_fast(self)
+			placement_queue.append(cpos)
 		else:
 			var new_chunk: Chunk = Chunk.new(cpos)
 			generation_queue[cpos] = new_chunk
@@ -395,16 +437,39 @@ func calculate_loaded_chunks(c: Vector3i, radius: int = RENDER_DISTANCE) -> Arra
 	return loaded_chunks
 
 func regenerate_rectangular_prism(pos: Vector3i, size: Vector3i):
-	print("---Regenerating Rectangle at pos: " + str(pos) + " of size: " + str(size))
+	#print("---Regenerating Rectangle at pos: " + str(pos) + " of size: " + str(size))
 	for x in range(pos.x, pos.x+size.x):
 		for y in range(pos.y, pos.y+size.y):
 			for z in range(pos.z, pos.z+size.z):
 				var block_pos: Vector3i = Vector3i(x, y, z)
 				var chunk_pos: Vector3i = block_pos_to_chunk_pos(block_pos)
+				if !world.has(chunk_pos):
+					continue
 				var chunk: Chunk = world[chunk_pos]
-				var in_chunk_pos = block_pos - (chunk_pos * CHUNK_SIZE)
-				chunk.regenerate_chunk_visual(self, in_chunk_pos)
-				#print("block_pos: " + str(block_pos) + " chunk pos: " + str(chunk_pos) + " local pos: " + str(in_chunk_pos))
+				var in_chunk_pos: Vector3i = chunk.global_block_pos_to_local_block_pos(block_pos)
+				var is_exposed: bool = false
+				var i: int = 0 #looping through the directions
+				while i <= 6:
+					i += 1
+					var checkpos: Vector3i = block_pos
+					match i:
+						1: checkpos += Vector3i.UP
+						2: checkpos += Vector3i.DOWN
+						3: checkpos += Vector3i.FORWARD
+						4: checkpos += Vector3i.BACK
+						5: checkpos += Vector3i.LEFT
+						6: checkpos += Vector3i.RIGHT
+					var check_chunk_pos: Vector3i = block_pos_to_chunk_pos(checkpos)
+					if !world.has(check_chunk_pos):
+						continue
+					var check_chunk: Chunk = world[check_chunk_pos]
+					var check_in_chunk_pos: Vector3i = check_chunk.global_block_pos_to_local_block_pos(checkpos)
+					if check_chunk.get_block(check_in_chunk_pos) == -1:
+						is_exposed = true
+						break
+				if is_exposed:
+					var blockdef = BlockRegistry.get_block_from_id(chunk.get_block(in_chunk_pos))
+					set_cell_item(block_pos, blockdef.meshlib_id)
 
 func destroy_block(world_coordinate: Vector3, drop_block: bool = true):
 	var block_coordinate: Vector3i = local_to_map(world_coordinate)
@@ -416,29 +481,31 @@ func destroy_block(world_coordinate: Vector3, drop_block: bool = true):
 	
 	if drop_block:
 		var block_id: int = chunk.get_block(cbpos)
-		var block_item: Item = Item.new(BlockRegistry.get_block(block_id-1).block_name, block_id, 1)
+		var block_def = BlockRegistry.get_block_from_id(block_id)
+		var block_item: Item = Item.new(block_def.block_name, block_def.item_id, 1)
 		var dropped_item = DroppedItem.new(block_item)
 		add_child(dropped_item)
 		dropped_item.global_position = world_coordinate
 		dropped_item.give_random_jump()
 	
 	chunk.set_block(cbpos, -1)
-	regenerate_rectangular_prism(block_coordinate-Vector3i.ONE*2, Vector3i.ONE * 5)
+	regenerate_rectangular_prism(block_coordinate-Vector3i.ONE, Vector3i.ONE * 3)
 	set_cell_item(block_coordinate, -1)
 
 func place_block(world_coordinate: Vector3, item_id: int):
 	var map_coordinate: Vector3i = local_to_map(world_coordinate)
 	var chunk_coordinate: Vector3i = block_pos_to_chunk_pos(map_coordinate)
 	var cbpos: Vector3i = map_coordinate - chunk_pos_to_block_pos(chunk_coordinate)
+	
 	var chunk: Chunk = world[chunk_coordinate]
 	chunk.set_block(cbpos, item_id)
+	regenerate_rectangular_prism(map_coordinate-Vector3i.ONE, Vector3i.ONE * 3)
 	
-	var def = BlockRegistry.get_block(item_id-1)
+	var def = BlockRegistry.get_block_from_id(item_id)
+	set_cell_item(map_coordinate, def.meshlib_id)
 	if def.function:
 		chunk.create_tile_entity(map_coordinate, def.function)
-	
-	#subtract 1 because the mesh library starts with 0 but block id's start with 1
-	set_cell_item(map_coordinate, item_id-1)
+
 
 func generate_block(pos: Vector3i, index: int):
 	set_cell_item(pos, index)
@@ -483,7 +550,7 @@ func save_region_to_file(filepath: String, region: Region):
 		FileAccess.get_open_error()
 		return
 	file.store_string(JSON.stringify(region_dict))
-	print("Saved region: " + str(region.rpos) + " to file: " + filepath)
+	#print("Saved region: " + str(region.rpos) + " to file: " + filepath)
 	file.close()
 
 
@@ -512,6 +579,12 @@ func load_region_from_file(filepath: String) -> Region:
 	
 	return region
 
-
+func exit_game():
+	print("Unloading regions")
+	unload_all_regions()
+	print("Exiting world...")
+	##needs to be done this way instead of change to packed for some reason
+	get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn")
+	
 
 #end

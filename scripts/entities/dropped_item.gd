@@ -92,8 +92,8 @@ func update_visual():
 	if item.item_id > 0:
 		sprite.hide()
 		model.show()
-		model.mesh = ItemProcesser.id_to_model(item.item_id)
+		model.mesh = BlockRegistry.get_block_from_id(item.item_id).model
 	else:
 		sprite.show()
 		model.hide()
-		sprite.texture = ItemProcesser.id_to_icon(item.item_id)
+		sprite.texture = BlockRegistry.get_block_from_id(item.item_id).icon

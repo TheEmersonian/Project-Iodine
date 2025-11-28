@@ -6,7 +6,7 @@ enum PlayerGamemode {
 }
 
 @export var selected_position: Vector3
-@export var gamemode: PlayerGamemode = PlayerGamemode.Survival
+@export var gamemode: PlayerGamemode = PlayerGamemode.Creative
 
 #cameras
 @onready var first_person_camera: Camera3D = $FirstPersonCamera
@@ -19,6 +19,7 @@ enum PlayerGamemode {
 @onready var inventory: PanelContainer = $UI/VBoxContainer/Inventory
 @onready var info_panel: VBoxContainer = $UI/InfoPanel
 @onready var mouse_item_display: MarginContainer = $UI/FloatingItem
+@onready var pause_menu: PanelContainer = $"UI/Pause Menu"
 
 var player_mass: float = 20.0
 
@@ -48,11 +49,14 @@ const mouse_sensitivity = 0.9
 
 var selected_perspective: Perspective = Perspective.First
 var inventory_open: bool = false
+##Note that the game is not paused, this is just the name I am using for this menu
+var game_paused: bool = false
 var selected_item: Item
 var selected_slot: int
 var mouse_item = Item.new("", 0, 0)
 
 func _ready() -> void:
+	pause_menu.player = self
 	setup_stats()
 	health_bar.health_attribute = max_health
 	health_bar.health_value = current_health
@@ -95,8 +99,6 @@ func get_valid_slot(item: Item):
 	return valid_slot
 
 func _physics_process(delta: float) -> void:
-	if Engine.get_physics_frames() < 500:
-		return
 	selected_position = Vector3.ZERO
 	update_ui()
 	if Input.is_action_just_pressed("Switch Gamemode"):
@@ -111,7 +113,7 @@ func _physics_process(delta: float) -> void:
 			velocity += GRAVITY * delta
 	selected_item = hotbar.selected_item
 	check_for_ui_inputs()
-	if !inventory_open:
+	if !inventory_open and !game_paused:
 		match gamemode:
 			PlayerGamemode.Survival:
 				check_for_movement()
@@ -190,6 +192,18 @@ func check_for_ui_inputs():
 				inventory.show()
 				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 			print("Is Inventory Open?: " + str(inventory_open))
+		if Input.is_action_just_pressed("Escape"):
+			if game_paused:
+				game_paused = false
+				pause_menu.hide()
+				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+			else:
+				game_paused = true
+				pause_menu.show()
+				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+			print("Is game paused?: " + str(game_paused))
+				
+			
 
 func check_for_perspective_change():
 	if Input.is_action_just_pressed("Change Perspective"):
@@ -383,3 +397,12 @@ func _on_inventory_slot_clicked(slot: Variant, button: Variant) -> void:
 		else:
 			print("Mouse Item Occupied")
 		print("Mouse item: " + mouse_item.as_string())
+
+
+func _on_pause_menu_game_exited() -> void:
+	get_parent().exit_game()
+
+
+func _on_pause_menu_game_continued() -> void:
+	pause_menu.hide()
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED

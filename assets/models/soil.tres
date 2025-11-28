@@ -1,0 +1,14 @@
+[gd_resource type="BoxMesh" load_steps=3 format=3 uid="uid://c3shn1ckndu0b"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_6dxdi"]
+load_path = "res://.godot/imported/soil.png-9f686166183c89ae1a25b6aff88f15a5.s3tc.ctex"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dvhww"]
+albedo_texture = SubResource("CompressedTexture2D_6dxdi")
+metallic_specular = 0.0
+texture_filter = 0
+texture_repeat = false
+
+[resource]
+lightmap_size_hint = Vector2i(14, 21)
+material = SubResource("StandardMaterial3D_dvhww")

@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://bfxa5pid3lbdu"]
+[gd_scene load_steps=13 format=3 uid="uid://bfxa5pid3lbdu"]
 
 [ext_resource type="Script" uid="uid://d3w22ngjvl3fh" path="res://scripts/entities/player/player.gd" id="1_08t41"]
 [ext_resource type="PackedScene" uid="uid://b0gob3vo1d03d" path="res://scenes/ui/crosshair.tscn" id="2_5u6hq"]
@@ -14,6 +14,9 @@ size = Vector3(0.7, 1.8, 0.7)
 
 [sub_resource type="BoxMesh" id="BoxMesh_08t41"]
 size = Vector3(0.7, 1.8, 0.7)
+
+[sub_resource type="CameraAttributesPractical" id="CameraAttributesPractical_dnykm"]
+exposure_multiplier = 0.75
 
 [sub_resource type="GDScript" id="GDScript_1ie0h"]
 script/source = "extends CanvasLayer
@@ -41,7 +44,9 @@ mesh = SubResource("BoxMesh_08t41")
 
 [node name="FirstPersonCamera" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+attributes = SubResource("CameraAttributesPractical_dnykm")
 current = true
+fov = 37.849285
 
 [node name="InteractionRaycast" type="RayCast3D" parent="FirstPersonCamera"]
 target_position = Vector3(0, 0, -5)
@@ -133,3 +138,5 @@ visible = false
 [connection signal="slot_clicked" from="UI/VBoxContainer/Inventory" to="." method="_on_inventory_slot_clicked"]
 [connection signal="selected_item_changed" from="UI/Hotbar" to="." method="_on_hotbar_selected_item_changed"]
 [connection signal="slot_clicked" from="UI/Hotbar" to="." method="_on_hotbar_slot_clicked"]
+[connection signal="game_continued" from="UI/Pause Menu" to="." method="_on_pause_menu_game_continued"]
+[connection signal="game_exited" from="UI/Pause Menu" to="." method="_on_pause_menu_game_exited"]

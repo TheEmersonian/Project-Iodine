@@ -25,6 +25,10 @@ GameManager="*res://scripts/globals/game_manager.gd"
 
 window/size/mode=4
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/map_generator/plugin.cfg")
+
 [file_customization]
 
 folder_colors={

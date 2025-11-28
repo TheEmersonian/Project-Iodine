@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://22pjlktle5o1"]
+[gd_scene load_steps=3 format=3 uid="uid://22pjlktle5o1"]
 
 [ext_resource type="StyleBox" uid="uid://bgoqpbev6ww7g" path="res://assets/resources/styleboxes/transparent_grey1.tres" id="1_6tw0m"]
+[ext_resource type="Script" uid="uid://87u55u2qp5xj" path="res://scripts/ui/pause_menu.gd" id="2_0lmf7"]
 
 [node name="Pause Menu" type="PanelContainer"]
 anchors_preset = 15
@@ -9,6 +10,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = ExtResource("1_6tw0m")
+script = ExtResource("2_0lmf7")
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
 layout_mode = 2
@@ -37,3 +39,7 @@ size_flags_vertical = 3
 theme_override_colors/font_color = Color(0.78431374, 0.78431374, 0.78431374, 1)
 theme_override_font_sizes/font_size = 32
 text = "Exit"
+
+[connection signal="pressed" from="CenterContainer/VBoxContainer/ContinueButton" to="." method="_on_continue_button_pressed"]
+[connection signal="pressed" from="CenterContainer/VBoxContainer/SettingsButton" to="." method="_on_settings_button_pressed"]
+[connection signal="pressed" from="CenterContainer/VBoxContainer/MainMenuButton" to="." method="_on_main_menu_button_pressed"]

@@ -1,0 +1,14 @@
+[gd_resource type="BoxMesh" load_steps=3 format=3 uid="uid://dbiw7nrfd2le7"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_16bcl"]
+load_path = "res://.godot/imported/white_claystone.png-c3de17934bb949da1e3a95d7f6ec9ca1.s3tc.ctex"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gseg3"]
+albedo_texture = SubResource("CompressedTexture2D_16bcl")
+metallic_specular = 0.0
+texture_filter = 0
+texture_repeat = false
+
+[resource]
+lightmap_size_hint = Vector2i(14, 21)
+material = SubResource("StandardMaterial3D_gseg3")

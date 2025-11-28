@@ -1,0 +1,14 @@
+[gd_resource type="BoxMesh" load_steps=3 format=3 uid="uid://c6avin74p380u"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_lgc42"]
+load_path = "res://.godot/imported/soil_with_healthy_grass.png-1ec3698092067df3e265691fd0013a4a.s3tc.ctex"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2ydjc"]
+albedo_texture = SubResource("CompressedTexture2D_lgc42")
+metallic_specular = 0.0
+texture_filter = 0
+texture_repeat = false
+
+[resource]
+lightmap_size_hint = Vector2i(14, 21)
+material = SubResource("StandardMaterial3D_2ydjc")

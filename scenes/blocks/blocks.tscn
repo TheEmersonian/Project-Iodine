@@ -1,83 +1,222 @@
-[gd_scene load_steps=12 format=3 uid="uid://bt2yxy151a58m"]
+[gd_scene load_steps=35 format=3 uid="uid://bt2yxy151a58m"]
 
-[ext_resource type="BoxMesh" uid="uid://cswckpgw8cu76" path="res://assets/models/stone.tres" id="1_op8yp"]
-[ext_resource type="BoxMesh" uid="uid://80y0r07ygncx" path="res://assets/models/deep_stone.tres" id="2_x41i8"]
-[ext_resource type="BoxMesh" uid="uid://2rphqcn1vd4r" path="res://assets/models/bedrock.tres" id="3_hv88f"]
-[ext_resource type="BoxMesh" uid="uid://e67qx28c6fwm" path="res://assets/models/dirt.tres" id="4_p2c7g"]
-[ext_resource type="BoxMesh" uid="uid://c2siclw1rllbd" path="res://assets/models/dirt_with_grass.tres" id="5_x2046"]
-[ext_resource type="BoxMesh" uid="uid://db3w7fr8fpthv" path="res://assets/models/oak_log.tres" id="6_x41i8"]
-[ext_resource type="BoxMesh" uid="uid://co4kbrapdtrj" path="res://assets/models/oak_planks.tres" id="7_hv88f"]
-[ext_resource type="PackedScene" uid="uid://cq6ua43qdebxo" path="res://scenes/blocks/crafting_table.tscn" id="8_hv88f"]
+[ext_resource type="Texture2D" uid="uid://4dnm71bj4o2c" path="res://assets/textures/blocks/granite.png" id="1_q26wp"]
+[ext_resource type="Texture2D" uid="uid://c8bjd3o57g3y4" path="res://assets/textures/blocks/white_claystone.png" id="2_vok4x"]
+[ext_resource type="Texture2D" uid="uid://cs6ntue3j6dx6" path="res://assets/textures/blocks/foidolite.png" id="3_mk7ic"]
+[ext_resource type="Texture2D" uid="uid://dtsp3gw24t6lv" path="res://assets/textures/blocks/pegmatite.png" id="4_mk7ic"]
+[ext_resource type="Texture2D" uid="uid://c4pbokb4ckpu4" path="res://assets/textures/blocks/jaspillite.png" id="5_fhai5"]
+[ext_resource type="Texture2D" uid="uid://cgpiw0vl6as67" path="res://assets/textures/blocks/kimberlite.png" id="6_op8yp"]
+[ext_resource type="Texture2D" uid="uid://dsylreaq2bx61" path="res://assets/textures/blocks/soil.png" id="7_x41i8"]
+[ext_resource type="Texture2D" uid="uid://d5h0k0u3gcy5" path="res://assets/textures/blocks/dirt.png" id="8_hv88f"]
+[ext_resource type="Texture2D" uid="uid://bijbmdd3s26mj" path="res://assets/textures/blocks/soil_with_healthy_grass.png" id="9_p2c7g"]
+[ext_resource type="Texture2D" uid="uid://dvsi7vurkxpio" path="res://assets/textures/blocks/soil_with_grass.png" id="10_x2046"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vvbvm"]
+albedo_texture = ExtResource("1_q26wp")
+metallic_specular = 0.0
+texture_filter = 0
+texture_repeat = false
+
+[sub_resource type="BoxMesh" id="BoxMesh_vok4x"]
+lightmap_size_hint = Vector2i(14, 21)
+material = SubResource("StandardMaterial3D_vvbvm")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_q26wp"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_vvbvm"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fhai5"]
+albedo_texture = ExtResource("2_vok4x")
+metallic_specular = 0.0
+texture_filter = 0
+texture_repeat = false
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_op8yp"]
+[sub_resource type="BoxMesh" id="BoxMesh_op8yp"]
+lightmap_size_hint = Vector2i(14, 21)
+material = SubResource("StandardMaterial3D_fhai5")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x41i8"]
+albedo_texture = ExtResource("3_mk7ic")
+metallic_specular = 0.0
+clearcoat_roughness = 0.0
+clearcoat_texture = ExtResource("3_mk7ic")
+texture_filter = 0
+texture_repeat = false
+
+[sub_resource type="BoxMesh" id="BoxMesh_hv88f"]
+lightmap_size_hint = Vector2i(14, 21)
+material = SubResource("StandardMaterial3D_x41i8")
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_fhai5"]
+load_path = "res://.godot/imported/foidolite.png-1fbdf2a4a142364eae90a76f668472e6.s3tc.ctex"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_op8yp"]
+albedo_texture = ExtResource("4_mk7ic")
+metallic_specular = 0.0
+clearcoat_roughness = 0.0
+clearcoat_texture = SubResource("CompressedTexture2D_fhai5")
+texture_filter = 0
+texture_repeat = false
+
+[sub_resource type="BoxMesh" id="BoxMesh_x41i8"]
+lightmap_size_hint = Vector2i(14, 21)
+material = SubResource("StandardMaterial3D_op8yp")
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_op8yp"]
+load_path = "res://.godot/imported/foidolite.png-1fbdf2a4a142364eae90a76f668472e6.s3tc.ctex"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hv88f"]
+albedo_texture = ExtResource("5_fhai5")
+metallic_specular = 0.0
+clearcoat_roughness = 0.0
+clearcoat_texture = SubResource("CompressedTexture2D_op8yp")
+texture_filter = 0
+texture_repeat = false
+
+[sub_resource type="BoxMesh" id="BoxMesh_p2c7g"]
+lightmap_size_hint = Vector2i(14, 21)
+material = SubResource("StandardMaterial3D_hv88f")
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_x41i8"]
+load_path = "res://.godot/imported/foidolite.png-1fbdf2a4a142364eae90a76f668472e6.s3tc.ctex"
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_p2c7g"]
+albedo_texture = ExtResource("6_op8yp")
+metallic_specular = 0.0
+clearcoat_roughness = 0.0
+clearcoat_texture = SubResource("CompressedTexture2D_x41i8")
+texture_filter = 0
+texture_repeat = false
+
+[sub_resource type="BoxMesh" id="BoxMesh_x2046"]
+lightmap_size_hint = Vector2i(14, 21)
+material = SubResource("StandardMaterial3D_p2c7g")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x2046"]
+albedo_texture = ExtResource("7_x41i8")
+metallic_specular = 0.0
+texture_filter = 0
+texture_repeat = false
+
+[sub_resource type="BoxMesh" id="BoxMesh_nt8um"]
+lightmap_size_hint = Vector2i(14, 21)
+material = SubResource("StandardMaterial3D_x2046")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nt8um"]
+albedo_texture = ExtResource("8_hv88f")
+metallic_specular = 0.0
+texture_filter = 0
+texture_repeat = false
+
+[sub_resource type="BoxMesh" id="BoxMesh_5cl7p"]
+lightmap_size_hint = Vector2i(14, 21)
+material = SubResource("StandardMaterial3D_nt8um")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5cl7p"]
+albedo_texture = ExtResource("9_p2c7g")
+metallic_specular = 0.0
+texture_filter = 0
+texture_repeat = false
+
+[sub_resource type="BoxMesh" id="BoxMesh_qn78v"]
+lightmap_size_hint = Vector2i(14, 21)
+material = SubResource("StandardMaterial3D_5cl7p")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qn78v"]
+albedo_texture = ExtResource("10_x2046")
+metallic_specular = 0.0
+texture_filter = 0
+texture_repeat = false
+
+[sub_resource type="BoxMesh" id="BoxMesh_o4i48"]
+lightmap_size_hint = Vector2i(14, 21)
+material = SubResource("StandardMaterial3D_qn78v")
 
 [node name="Blocks" type="Node3D"]
 
-[node name="stone" type="MeshInstance3D" parent="."]
-mesh = ExtResource("1_op8yp")
+[node name="granite" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_vok4x")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="stone"]
+[node name="StaticBody3D" type="StaticBody3D" parent="granite"]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="stone/StaticBody3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="granite/StaticBody3D"]
 shape = SubResource("BoxShape3D_q26wp")
 
-[node name="deep_stone" type="MeshInstance3D" parent="."]
+[node name="white_claystone" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
+mesh = SubResource("BoxMesh_op8yp")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="white_claystone"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="white_claystone/StaticBody3D"]
+shape = SubResource("BoxShape3D_q26wp")
+
+[node name="foidolite" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0)
+mesh = SubResource("BoxMesh_hv88f")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="foidolite"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="foidolite/StaticBody3D"]
+shape = SubResource("BoxShape3D_q26wp")
+
+[node name="pegmatite" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, 0)
+mesh = SubResource("BoxMesh_x41i8")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="pegmatite"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="pegmatite/StaticBody3D"]
+shape = SubResource("BoxShape3D_q26wp")
+
+[node name="jaspillite" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 0)
+mesh = SubResource("BoxMesh_p2c7g")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="jaspillite"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="jaspillite/StaticBody3D"]
+shape = SubResource("BoxShape3D_q26wp")
+
+[node name="kimberlite" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 0)
+mesh = SubResource("BoxMesh_x2046")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="kimberlite"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="kimberlite/StaticBody3D"]
+shape = SubResource("BoxShape3D_q26wp")
+
+[node name="soil" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1)
-mesh = ExtResource("2_x41i8")
+mesh = SubResource("BoxMesh_nt8um")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="deep_stone"]
+[node name="StaticBody3D" type="StaticBody3D" parent="soil"]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="deep_stone/StaticBody3D"]
-shape = SubResource("BoxShape3D_q26wp")
-
-[node name="bedrock" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
-mesh = ExtResource("3_hv88f")
-
-[node name="StaticBody3D" type="StaticBody3D" parent="bedrock"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="bedrock/StaticBody3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="soil/StaticBody3D"]
 shape = SubResource("BoxShape3D_q26wp")
 
 [node name="dirt" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
-mesh = ExtResource("4_p2c7g")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
+mesh = SubResource("BoxMesh_5cl7p")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="dirt"]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="dirt/StaticBody3D"]
-shape = SubResource("BoxShape3D_vvbvm")
+shape = SubResource("BoxShape3D_q26wp")
 
-[node name="dirt_with_grass" type="MeshInstance3D" parent="."]
+[node name="soil_with_healthy_grass" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)
+mesh = SubResource("BoxMesh_qn78v")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="soil_with_healthy_grass"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="soil_with_healthy_grass/StaticBody3D"]
+shape = SubResource("BoxShape3D_q26wp")
+
+[node name="soil_with_grass" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
-mesh = ExtResource("5_x2046")
+mesh = SubResource("BoxMesh_o4i48")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="dirt_with_grass"]
+[node name="StaticBody3D" type="StaticBody3D" parent="soil_with_grass"]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="dirt_with_grass/StaticBody3D"]
-shape = SubResource("BoxShape3D_vvbvm")
-
-[node name="oak_log" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 5)
-mesh = ExtResource("6_x41i8")
-
-[node name="StaticBody3D" type="StaticBody3D" parent="oak_log"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="oak_log/StaticBody3D"]
-shape = SubResource("BoxShape3D_op8yp")
-
-[node name="oak_planks" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 6)
-mesh = ExtResource("7_hv88f")
-
-[node name="StaticBody3D" type="StaticBody3D" parent="oak_planks"]
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="oak_planks/StaticBody3D"]
-shape = SubResource("BoxShape3D_op8yp")
-
-[node name="Crafting Table" parent="." instance=ExtResource("8_hv88f")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 7)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="soil_with_grass/StaticBody3D"]
+shape = SubResource("BoxShape3D_q26wp")

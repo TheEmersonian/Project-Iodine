@@ -33,28 +33,6 @@ func id_to_item(id: int):
 		7: return "oak_planks"
 	get_tree().quit(2) #error code 1 is when you interact with a item type that isn't in the game
 
-func id_to_icon(id: int):
-	match id:
-		1: return preload("res://assets/textures/icons/stone.tres")
-		#2: return preload("res://assets/textures/icons/deep_stone.tres")
-		3: return preload("res://assets/textures/icons/bedrock.tres")
-		4: return preload("res://assets/textures/icons/dirt.png")
-		5: return preload("res://assets/textures/icons/dirt_with_grass.tres")
-		6: return preload("res://assets/textures/icons/oak_log.tres")
-		7: return preload("res://assets/textures/icons/oak_planks.tres")
-	print("Invalid item")
-	return preload("res://assets/textures/ui/Ether2.png")
-
-func id_to_model(id: int):
-	match id:
-		1: return preload("res://assets/models/stone.tres")
-		2: return preload("res://assets/models/deep_stone.tres")
-		3: return preload("res://assets/models/bedrock.tres")
-		4: return preload("res://assets/models/dirt.tres")
-		5: return preload("res://assets/models/dirt_with_grass.tres")
-		6: return preload("res://assets/models/oak_log.tres")
-		7: return preload("res://assets/models/oak_planks.tres")
-
 func item_to_mass(item_name: String):
 	match item_name:
 		"stone": return 3.75

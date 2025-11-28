@@ -19,33 +19,100 @@ enum GeneratedRotationType {
 
 class BlockDef:
 	var block_name: String
+	var meshlib_id: int
+	var item_id: int
 	var is_solid: bool
 	var generated_rotation: GeneratedRotationType
+	var density: float
 	var function: Script = null
 	var default_metadata = null
-	func _init(block_name: String, is_block_solid: bool = true, generated_orientation: GeneratedRotationType = GeneratedRotationType.Fixed, block_function: Script = null) -> void:
-		block_name = block_name
+	var icon: ImageTexture
+	var model: Mesh
+	func _init(name: String, mesh_id: int, item_type_id: int, block_icon: ImageTexture, block_model: Mesh, is_block_solid: bool = true, block_density: float = 1.0, generated_orientation: GeneratedRotationType = GeneratedRotationType.Fixed, block_function: Script = null) -> void:
+		block_name = name
+		meshlib_id = mesh_id
+		item_id = item_type_id
 		is_solid = is_block_solid
+		density = block_density
 		generated_rotation = generated_orientation
 		function = block_function
+		icon = block_icon
+		model = block_model
 
 
 @export var blocks: Dictionary = {}
 
 func register_block(id: int, def: BlockDef):
 	blocks[id] = def
+	blocks[def.block_name] = def
 
-func get_block(id: int):
+func get_block_from_id(id: int) -> BlockDef:
 	if blocks.keys().has(id):
 		return blocks[id]
+	print("Invalid id: " + str(id))
+	return null
+
+func get_block_from_name(blockname: String) -> BlockDef:
+	if blocks.keys().has(blockname):
+		return blocks[blockname]
+	print("Invalid name: " + blockname)
+	return null
 
 func _ready() -> void:
-	register_block(0, BlockDef.new("stone"))
-	register_block(1, BlockDef.new("deep_stone"))
-	register_block(2, BlockDef.new("bedrock"))
-	register_block(3, BlockDef.new("dirt", true, GeneratedRotationType.Random))
-	register_block(4, BlockDef.new("dirt_with_grass", true, GeneratedRotationType.VerticalRandom))
-
+	#-1 reserved for air
+	register_block(-1, BlockDef.new("air", -1, -1,
+	null, null, false, 0.0))
+	##STONE (1-100 reserved for natural stone blocks) 
+	#granite
+	##            this and                      this should be the same value
+	register_block(1, BlockDef.new("granite", 0, 1,
+		preload("res://assets/textures/icons/granite.tres"), 
+		preload("res://assets/models/granite.tres"), 
+		true))
+	#white claystone
+	register_block(2, BlockDef.new("white_claystone", 1, 2,
+		preload("res://assets/textures/icons/white_claystone.tres"), 
+		preload("res://assets/models/white_claystone.tres"), 
+		true))
+	#foidolite
+	register_block(3, BlockDef.new("foidolite", 2, 3,
+	preload("res://assets/textures/icons/foidolite.tres"), 
+	preload("res://assets/models/foidolite.tres"), 
+	true))
+	#pegmatite
+	register_block(4, BlockDef.new("pegmatite", 3, 4,
+	preload("res://assets/textures/icons/pegmatite.tres"), 
+	preload("res://assets/models/pegmatite.tres"), 
+	true))
+	#jaspillite
+	register_block(5, BlockDef.new("jaspillite", 4, 5,
+	preload("res://assets/textures/icons/jaspillite.tres"),
+	preload("res://assets/models/jaspillite.tres"),
+	true))
+	
+	##DIRT (101-150 reserved for dirt blocks)
+	#soil, the healthy version of dirt
+	register_block(101, BlockDef.new("soil", 6, 101,
+	preload("res://assets/textures/icons/soil.tres"), 
+	preload("res://assets/models/soil.tres"), 
+	true))
+	#dirt
+	register_block(102, BlockDef.new("dirt", 7, 102,
+	preload("res://assets/textures/icons/dirt.tres"), 
+	preload("res://assets/models/dirt.tres"), 
+	true))
+	#soil with healthy grass, this is generally what will generate, but it can be made less healthy through various processes
+	register_block(103, BlockDef.new("soil_with_healthy_grass", 8, 103,
+	preload("res://assets/textures/icons/soil_with_healthy_grass.tres"), 
+	preload("res://assets/models/soil_with_healthy_grass.tres"), 
+	true))
+	#soil with grass.  Later I will add different types of grass
+	register_block(104, BlockDef.new("soil_with_grass", 9, 104,
+	preload("res://assets/textures/icons/soil_with_grass.tres"), 
+	preload("res://assets/models/soil_with_grass.tres"), 
+	true))
+	
+	
 
 
 
