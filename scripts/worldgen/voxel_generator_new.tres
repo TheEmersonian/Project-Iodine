@@ -1,0 +1,6 @@
+[gd_resource type="VoxelGeneratorScript" load_steps=2 format=3 uid="uid://bt0vhybgoge83"]
+
+[ext_resource type="Script" uid="uid://dkqrsptrvpww7" path="res://scenes/voxel_generator_iodine.gd" id="1_o3rgr"]
+
+[resource]
+script = ExtResource("1_o3rgr")

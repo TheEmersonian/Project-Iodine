@@ -18,7 +18,6 @@ ERROR CODES:
 	
 
 # TODO: 
-	Chunks generate around player, save to file, and load from file
 	Selected item is held
 	3d item textures
 	
@@ -79,3 +78,4 @@ ERROR CODES:
 	dropped item merging - the larger the stack the more mass it has and the longer it takes to merge
 	Sprinting
 	Inventory that more closely mirrors the minecraft one
+	Chunks generate around player, save to file, and load from file (maybe loading doesnt work completely tho)

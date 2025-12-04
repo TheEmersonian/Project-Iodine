@@ -1,25 +1,19 @@
-[gd_scene load_steps=35 format=3 uid="uid://bt2yxy151a58m"]
+[gd_scene load_steps=32 format=3 uid="uid://bt2yxy151a58m"]
 
-[ext_resource type="Texture2D" uid="uid://4dnm71bj4o2c" path="res://assets/textures/blocks/granite.png" id="1_q26wp"]
+[ext_resource type="Material" uid="uid://d3sc04hyggear" path="res://assets/materials/granite.tres" id="1_x2046"]
 [ext_resource type="Texture2D" uid="uid://c8bjd3o57g3y4" path="res://assets/textures/blocks/white_claystone.png" id="2_vok4x"]
 [ext_resource type="Texture2D" uid="uid://cs6ntue3j6dx6" path="res://assets/textures/blocks/foidolite.png" id="3_mk7ic"]
 [ext_resource type="Texture2D" uid="uid://dtsp3gw24t6lv" path="res://assets/textures/blocks/pegmatite.png" id="4_mk7ic"]
 [ext_resource type="Texture2D" uid="uid://c4pbokb4ckpu4" path="res://assets/textures/blocks/jaspillite.png" id="5_fhai5"]
 [ext_resource type="Texture2D" uid="uid://cgpiw0vl6as67" path="res://assets/textures/blocks/kimberlite.png" id="6_op8yp"]
-[ext_resource type="Texture2D" uid="uid://dsylreaq2bx61" path="res://assets/textures/blocks/soil.png" id="7_x41i8"]
-[ext_resource type="Texture2D" uid="uid://d5h0k0u3gcy5" path="res://assets/textures/blocks/dirt.png" id="8_hv88f"]
+[ext_resource type="Material" uid="uid://vwqiesmwl3fb" path="res://assets/materials/soil.tres" id="7_x2046"]
+[ext_resource type="Material" uid="uid://bvb1t06psgdnw" path="res://assets/materials/dirt.tres" id="8_x2046"]
 [ext_resource type="Texture2D" uid="uid://bijbmdd3s26mj" path="res://assets/textures/blocks/soil_with_healthy_grass.png" id="9_p2c7g"]
 [ext_resource type="Texture2D" uid="uid://dvsi7vurkxpio" path="res://assets/textures/blocks/soil_with_grass.png" id="10_x2046"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vvbvm"]
-albedo_texture = ExtResource("1_q26wp")
-metallic_specular = 0.0
-texture_filter = 0
-texture_repeat = false
-
 [sub_resource type="BoxMesh" id="BoxMesh_vok4x"]
 lightmap_size_hint = Vector2i(14, 21)
-material = SubResource("StandardMaterial3D_vvbvm")
+material = ExtResource("1_x2046")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_q26wp"]
 
@@ -90,25 +84,13 @@ texture_repeat = false
 lightmap_size_hint = Vector2i(14, 21)
 material = SubResource("StandardMaterial3D_p2c7g")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x2046"]
-albedo_texture = ExtResource("7_x41i8")
-metallic_specular = 0.0
-texture_filter = 0
-texture_repeat = false
-
 [sub_resource type="BoxMesh" id="BoxMesh_nt8um"]
 lightmap_size_hint = Vector2i(14, 21)
-material = SubResource("StandardMaterial3D_x2046")
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nt8um"]
-albedo_texture = ExtResource("8_hv88f")
-metallic_specular = 0.0
-texture_filter = 0
-texture_repeat = false
+material = ExtResource("7_x2046")
 
 [sub_resource type="BoxMesh" id="BoxMesh_5cl7p"]
 lightmap_size_hint = Vector2i(14, 21)
-material = SubResource("StandardMaterial3D_nt8um")
+material = ExtResource("8_x2046")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5cl7p"]
 albedo_texture = ExtResource("9_p2c7g")

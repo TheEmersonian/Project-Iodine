@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://dlcp50mpc6to2"]
+
+[ext_resource type="Script" uid="uid://5jfi81xr2yx1" path="res://addons/root-tech-tree-editor/TechTreeRoot.gd" id="1_utp36"]
+
+[node name="TechTreeRoot" type="Node"]
+script = ExtResource("1_utp36")
+metadata/_custom_type_script = "uid://5jfi81xr2yx1"

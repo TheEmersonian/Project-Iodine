@@ -1,6 +1,6 @@
 extends Node
 
-@export var game_directory: String = "C:/Users/emers/AppData/Roaming/Project Iodine"
+@export var game_directory: String = "user://AppData/Roaming/Project Iodine"
 @export var save_folder: String = ""
 
 func _ready() -> void:

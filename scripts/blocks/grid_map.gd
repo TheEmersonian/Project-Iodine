@@ -4,7 +4,6 @@ extends GridMap
 
 @export var player_scene: PackedScene = preload("res://scenes/entities/player.tscn")
 
-@export var heightmap: Image
 #IMPORTANT: The gridmap's values are offset by 1 from the item ids.  Stone in the gridmap is 0, stone in item id's is 1
 
 
@@ -15,7 +14,7 @@ const REGION_SIZE: Vector3i = Vector3(4, 16, 4)
 
 const NUM_CHUNKS_IN_REGION: int = REGION_SIZE.x * REGION_SIZE.y * REGION_SIZE.z
 
-@export var noise_parameters := {
+var noise_parameters := {
 	"seed": 1,
 	"base_height": 128,
 	"octaves": 13,
@@ -36,8 +35,10 @@ const NUM_CHUNKS_IN_REGION: int = REGION_SIZE.x * REGION_SIZE.y * REGION_SIZE.z
 	"continent_amplitude": 2.6,
 }
 
+#so many queues lmao
 var generation_queue := {}
 var placement_queue := []
+var removal_queue := []
 
 ##Holds all active chunks, keyed by chunk positions
 var world := {}
@@ -176,14 +177,17 @@ class Chunk:
 				var final_value: float = continent_value + (noise_value*continent_value)
 				var height: int = noise_parameters.base_height + abs(round(final_value))
 				@warning_ignore("narrowing_conversion")
-				var dirt_height: int = height-(height/10.0)
+				#above this dirt generates instead of stone
+				var dirt_height: int = height - (height / 10.0)
 				@warning_ignore("narrowing_conversion")
-				var soil_height: int = height-(log(height)/10.0)
+				#above this soil generates instead of dirt
+				var soil_height: int = height - (1 + abs(local_noise.get_noise_3dv(noise_position + Vector3i(0, height, 0))))
 				for y in range(CHUNK_SIZE):
 					var in_chunk_position: Vector3i = Vector3i(x, y, z)
 					var tpos: Vector3i = chunk_offset + in_chunk_position
-					
-					if tpos.y == height:
+					if tpos.y > height:
+						set_block(in_chunk_position, -1)
+					elif tpos.y == height:
 						set_block(in_chunk_position, healthy_grass)
 					elif tpos.y < height:
 						if tpos.y > soil_height:
@@ -192,9 +196,7 @@ class Chunk:
 							set_block(in_chunk_position, dirt)
 						else:
 							set_block(in_chunk_position, granite)
-					else:
-						set_block(in_chunk_position, -1)
-	
+
 	func place_chunk(grid: GridMap):
 		var chunk_offset: Vector3i = cpos_to_bpos(cpos)
 		for i in blocks.size():
@@ -271,6 +273,9 @@ class Chunk:
 
 
 func _ready() -> void:
+	bake_navigation = false
+	print(str(noise_parameters))
+	print("Seed: " + str(noise_parameters.seed))
 	spawn_player()
 	load_new_chunks(calculate_loaded_chunks(block_pos_to_chunk_pos(spawn_position)))
 	
@@ -291,6 +296,7 @@ func _process(_delta: float) -> void:
 	place_chunks_efficiently(10)
 	var regions_queued_for_unloading: Array[Vector3i] = regions_for_unloading()
 	unload_regions_efficiently(10, regions_queued_for_unloading)
+	remove_chunks_efficiently(10)
 #save the region to the file
 #		var filepath: String = GameManager.save_folder + Region.region_pos_to_file_name(rpos) + ".json"
 #		save_region_to_file(filepath, region)
@@ -312,6 +318,14 @@ func place_chunks_efficiently(msec_time: int):
 		var current_chunk: Chunk = world[i]
 		current_chunk.place_chunk_fast(self)
 		placement_queue.erase(i)
+		if Time.get_ticks_msec() - start_time > msec_time:
+			return
+
+func remove_chunks_efficiently(msec_time: int):
+	var start_time: float = Time.get_ticks_msec()
+	for cpos in removal_queue:
+		unload_chunk_from_world(cpos)
+		removal_queue.erase(cpos)
 		if Time.get_ticks_msec() - start_time > msec_time:
 			return
 
@@ -391,11 +405,15 @@ func load_new_chunks(loaded_chunks_list: Array[Vector3i]):
 		
 
 func unload_old_chunks(loaded_chunks_list):
+	var start: float = Time.get_ticks_msec()
 	var worldkeys: Array = world.keys()
 	
 	for cpos in worldkeys:
 		#if the chunk should still be loaded then keep it
 		if loaded_chunks_list.has(cpos):
+			continue
+		
+		if removal_queue.has(cpos):
 			continue
 		
 		#Save the chunk, the region pos, and prepare the region object
@@ -414,17 +432,26 @@ func unload_old_chunks(loaded_chunks_list):
 		region.add_chunk(chunk)
 		
 		#remove the chunk from the world
-		unload_chunk_from_world(cpos)
+		removal_queue.append(cpos) 
+	var time_taken: float = Time.get_ticks_msec() - start
+	if time_taken > 2.0:
+		print("unload_old_chunks took " + str(time_taken) + " milliseconds")
+		#looks like this function isnt the optimization problem
 
 func unload_chunk_from_world(cpos):
+	var start: float = Time.get_ticks_msec()
 	world.erase(cpos)
 	var startpos: Vector3i = chunk_pos_to_block_pos(cpos)
-	var endpos: Vector3i = startpos + Vector3i(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE)
 	var cells: Array[Vector3i] = get_used_cells()
-	for c in cells:
-		if c.x >= startpos.x and c.y >= startpos.y and c.z >= startpos.z:
-			if c.x < endpos.x and c.y < endpos.y and c.z < endpos.z:
-				set_cell_item(c, -1)
+	for x in range(CHUNK_SIZE):
+		for y in range(CHUNK_SIZE):
+			for z in range(CHUNK_SIZE):
+				var pos: Vector3i = startpos + Vector3i(x, y, z)
+				if cells.has(pos):
+					set_cell_item(pos, -1)
+	var timetaken: float = Time.get_ticks_msec() - start
+	if timetaken > 2.0:
+		print("unload_chunk_from_world took " + str(timetaken) + " milliseconds")
 
 
 ##c = center

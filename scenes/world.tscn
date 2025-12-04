@@ -1,8 +1,10 @@
-[gd_scene load_steps=7 format=3 uid="uid://cfnr4ca22og42"]
+[gd_scene load_steps=16 format=3 uid="uid://cfnr4ca22og42"]
 
-[ext_resource type="MeshLibrary" uid="uid://bdatvgi4cfr5s" path="res://assets/resources/blocks.tres" id="1_rwgxs"]
-[ext_resource type="Script" uid="uid://btd005xvgc2kd" path="res://scripts/blocks/grid_map.gd" id="2_4wyf3"]
-[ext_resource type="MeshLibrary" uid="uid://cydj2huuuaevr" path="res://assets/resources/block_overlays.tres" id="3_4wyf3"]
+[ext_resource type="Script" uid="uid://b2d1nvb6rev3l" path="res://scripts/world.gd" id="1_k0juu"]
+[ext_resource type="VoxelGeneratorScript" uid="uid://bt0vhybgoge83" path="res://scripts/worldgen/voxel_generator_new.tres" id="2_71j4m"]
+[ext_resource type="Material" uid="uid://d3sc04hyggear" path="res://assets/materials/granite.tres" id="2_rwgxs"]
+[ext_resource type="Material" uid="uid://vwqiesmwl3fb" path="res://assets/materials/soil.tres" id="3_k0juu"]
+[ext_resource type="Material" uid="uid://bvb1t06psgdnw" path="res://assets/materials/dirt.tres" id="4_71j4m"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_e5uuo"]
 sky_top_color = Color(0.26364025, 0.6113812, 0.88896304, 1)
@@ -19,7 +21,31 @@ tonemap_mode = 2
 ssao_enabled = true
 glow_enabled = true
 
+[sub_resource type="VoxelStreamRegionFiles" id="VoxelStreamRegionFiles_nnsk1"]
+save_generator_output = true
+
+[sub_resource type="VoxelBlockyModelEmpty" id="VoxelBlockyModelEmpty_nnsk1"]
+
+[sub_resource type="VoxelBlockyModelCube" id="VoxelBlockyModelCube_rwgxs"]
+atlas_size_in_tiles = Vector2i(1, 1)
+material_override_0 = ExtResource("2_rwgxs")
+
+[sub_resource type="VoxelBlockyModelCube" id="VoxelBlockyModelCube_k0juu"]
+atlas_size_in_tiles = Vector2i(1, 1)
+material_override_0 = ExtResource("3_k0juu")
+
+[sub_resource type="VoxelBlockyModelCube" id="VoxelBlockyModelCube_qfnet"]
+atlas_size_in_tiles = Vector2i(1, 1)
+material_override_0 = ExtResource("4_71j4m")
+
+[sub_resource type="VoxelBlockyLibrary" id="VoxelBlockyLibrary_4wyf3"]
+models = Array[VoxelBlockyModel]([SubResource("VoxelBlockyModelEmpty_nnsk1"), SubResource("VoxelBlockyModelCube_rwgxs"), SubResource("VoxelBlockyModelCube_k0juu"), SubResource("VoxelBlockyModelCube_qfnet")])
+
+[sub_resource type="VoxelMesherBlocky" id="VoxelMesherBlocky_k0juu"]
+library = SubResource("VoxelBlockyLibrary_4wyf3")
+
 [node name="World" type="Node3D"]
+script = ExtResource("1_k0juu")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
@@ -28,14 +54,8 @@ shadow_enabled = true
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_rwgxs")
 
-[node name="GridMap" type="GridMap" parent="."]
-mesh_library = ExtResource("1_rwgxs")
-cell_size = Vector3(1, 1, 1)
-script = ExtResource("2_4wyf3")
-metadata/_editor_floor_ = Vector3(0, 0, 0)
-
-[node name="BlockOverlay" type="GridMap" parent="."]
-unique_name_in_owner = true
-mesh_library = ExtResource("3_4wyf3")
-cell_size = Vector3(1, 1, 1)
-metadata/_editor_floor_ = Vector3(0, 0, 0)
+[node name="VoxelTerrain" type="VoxelTerrain" parent="."]
+run_stream_in_editor = false
+stream = SubResource("VoxelStreamRegionFiles_nnsk1")
+generator = ExtResource("2_71j4m")
+mesher = SubResource("VoxelMesherBlocky_k0juu")

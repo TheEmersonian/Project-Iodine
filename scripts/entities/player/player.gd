@@ -8,6 +8,9 @@ enum PlayerGamemode {
 @export var selected_position: Vector3
 @export var gamemode: PlayerGamemode = PlayerGamemode.Creative
 
+@onready var world: Node3D = get_parent()
+@onready var vox_tool: VoxelTool = world.voxel_tool
+
 #cameras
 @onready var first_person_camera: Camera3D = $FirstPersonCamera
 @onready var third_person_camera: Camera3D = $FirstPersonCamera/ThirdPersonCamera
@@ -289,16 +292,19 @@ func creative_movement():
 		velocity.z = move_toward(velocity.z, 0, SPEED)
 
 func check_for_interactions():
+	print("Check for interactions")
+	var raycast_result: VoxelRaycastResult =vox_tool.raycast(first_person_camera.global_position, first_person_camera.rotation, )
 	interaction_raycast.target_position.z = -1 * reach.current_value()
 	if interaction_raycast.is_colliding():
 		var hit_object: Node3D = interaction_raycast.get_collider()
 		if hit_object != null:
 			if hit_object.has_method("destroy_block"):
-				selected_position = interaction_raycast.get_collision_point() - (interaction_raycast.get_collision_normal() * 0.1)
+				selected_position = interaction_raycast.get_collision_point() - (interaction_raycast.get_collision_normal().normalized() * 0.1)
 			else:
 				selected_position = Vector3.ZERO
 		check_for_pickup(hit_object)
-		check_for_block_interaction(hit_object)
+		if hit_object is VoxelTerrain:
+			check_for_block_interaction(hit_object)
 
 func check_for_pickup(hit_object: Node3D):
 	if Input.is_action_just_pressed("Pick Up"):
@@ -313,24 +319,22 @@ func check_for_pickup(hit_object: Node3D):
 			interaction_raycast.force_raycast_update()
 
 func check_for_block_interaction(hit_object: Node3D):
-	if hit_object == null:
-		return
+	print("checking for block interaction")
 	# check for breaking blocks
 	if Input.is_action_just_pressed("Left Click"):
-		if hit_object.has_method("destroy_block"):
-			#subtract the collision normal for breaking blocks
-			var destroy_position: Vector3 = interaction_raycast.get_collision_point() - (interaction_raycast.get_collision_normal() * 0.2)
-			hit_object.destroy_block(destroy_position)
-			interaction_raycast.force_raycast_update()
+		#subtract the collision normal for breaking blocks
+		var destroy_position: Vector3 = interaction_raycast.get_collision_point() - (interaction_raycast.get_collision_normal().normalized() * 0.02)
+		print("Attempting to destroy block at: " + str(destroy_position))
+		world.remove_block(destroy_position)
+		interaction_raycast.force_raycast_update()
 	# check for placing blocks
-	if Input.is_action_just_pressed("Right Click"):
+	elif Input.is_action_just_pressed("Right Click"):
 		if selected_item.item_count > 0:
-			if hit_object.has_method("place_block"):
-				#add the collision normal for placing blocks
-				var place_position: Vector3 = interaction_raycast.get_collision_point() + (interaction_raycast.get_collision_normal() * 0.2)
-				place_block(place_position, hit_object)
-				interaction_raycast.force_raycast_update()
-
+			#add the collision normal for placing blocks
+			var place_position: Vector3 = interaction_raycast.get_collision_point() + (interaction_raycast.get_collision_normal() * 0.02)
+			var selected_block = BlockRegistry.get_block_from_id(selected_item.item_id)
+			world.place_block(place_position, selected_block)
+			interaction_raycast.force_raycast_update()
 func display_mouse_item():
 	if inventory_open and mouse_item.item_id != 0:
 		mouse_item_display.stored_item = mouse_item

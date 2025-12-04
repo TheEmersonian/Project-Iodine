@@ -1,0 +1,11 @@
+{
+	Initial Noise Fields: {
+		Difficulty: [range],
+		Temperature: [range],
+		Humidity: [range],
+		Continentalness: [range],
+		Erosion: [range],
+		Depth: [range],
+		
+	}
+}
