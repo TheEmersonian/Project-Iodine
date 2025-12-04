@@ -293,18 +293,19 @@ func creative_movement():
 
 func check_for_interactions():
 	print("Check for interactions")
-	var raycast_result: VoxelRaycastResult =vox_tool.raycast(first_person_camera.global_position, first_person_camera.rotation, )
-	interaction_raycast.target_position.z = -1 * reach.current_value()
-	if interaction_raycast.is_colliding():
-		var hit_object: Node3D = interaction_raycast.get_collider()
-		if hit_object != null:
-			if hit_object.has_method("destroy_block"):
-				selected_position = interaction_raycast.get_collision_point() - (interaction_raycast.get_collision_normal().normalized() * 0.1)
-			else:
+	var raycast_result: VoxelRaycastResult = vox_tool.raycast(first_person_camera.global_position, first_person_camera.rotation_degrees)                                                   
+	if raycast_result != null:
+		if Input.is_action_just_pressed("Left Click"):
+			world.remove_block(raycast_result.position)
+		elif Input.is_action_just_pressed("Right Click"):
+			world.place_block(raycast_result.previous_position)
+	else:
+		interaction_raycast.target_position.z = -1 * reach.current_value()
+		if interaction_raycast.is_colliding():
+			var hit_object: Node3D = interaction_raycast.get_collider()
+			if hit_object != null:
 				selected_position = Vector3.ZERO
-		check_for_pickup(hit_object)
-		if hit_object is VoxelTerrain:
-			check_for_block_interaction(hit_object)
+				check_for_pickup(hit_object)
 
 func check_for_pickup(hit_object: Node3D):
 	if Input.is_action_just_pressed("Pick Up"):
