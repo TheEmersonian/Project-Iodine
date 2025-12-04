@@ -23,7 +23,7 @@ func remove_block(pos: Vector3i):
 	print("Removing block at: " + str(block_pos))
 	voxel_tool.set_voxel(block_pos, 0)
 
-func place_block(pos: Vector3i, block):
+func place_block(pos: Vector3i, block = null):
 	var block_pos: Vector3i = world_pos_to_block_pos(pos)
 	print("Placing block at: " + str(block_pos))
 	voxel_tool.set_voxel(pos, 1)

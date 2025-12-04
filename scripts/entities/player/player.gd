@@ -293,7 +293,7 @@ func creative_movement():
 
 func check_for_interactions():
 	print("Check for interactions")
-	var raycast_result: VoxelRaycastResult = vox_tool.raycast(first_person_camera.global_position, first_person_camera.rotation_degrees)                                                   
+	var raycast_result: VoxelRaycastResult = vox_tool.raycast(interaction_raycast.global_position, interaction_raycast.rotation)                                                   
 	if raycast_result != null:
 		if Input.is_action_just_pressed("Left Click"):
 			world.remove_block(raycast_result.position)

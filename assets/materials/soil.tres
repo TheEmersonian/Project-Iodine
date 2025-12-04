@@ -1,10 +1,9 @@
 [gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://vwqiesmwl3fb"]
 
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_2j7yk"]
-load_path = "res://.godot/imported/soil.png-9f686166183c89ae1a25b6aff88f15a5.s3tc.ctex"
+[ext_resource type="Texture2D" uid="uid://bmi8dc418seel" path="res://assets/textures/block_faces/soil_face.png" id="1_7gwdq"]
 
 [resource]
-albedo_texture = SubResource("CompressedTexture2D_2j7yk")
+albedo_texture = ExtResource("1_7gwdq")
 metallic_specular = 0.0
 texture_filter = 0
 texture_repeat = false

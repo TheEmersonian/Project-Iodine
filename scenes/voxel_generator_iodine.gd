@@ -38,7 +38,18 @@ var _heightmap_range := 0
 var _heightmap_noise := FastNoiseLite.new()
 
 func _init():
-	pass
+	_heightmap_noise.seed = 1
+	_heightmap_noise.fractal_octaves = 13
+	_heightmap_noise.frequency = 0.01
+	_heightmap_noise.fractal_gain = 0.03
+	_heightmap_noise.domain_warp_enabled = true
+	_heightmap_noise.domain_warp_amplitude = 15
+	_heightmap_noise.domain_warp_fractal_gain = 0.5
+	_heightmap_noise.domain_warp_fractal_lacunarity = 3.0
+	_heightmap_noise.domain_warp_fractal_octaves = 8
+	_heightmap_noise.domain_warp_fractal_type = FastNoiseLite.DOMAIN_WARP_FRACTAL_INDEPENDENT
+	_heightmap_noise.domain_warp_frequency = 0.01
+	_heightmap_noise.domain_warp_type = FastNoiseLite.DOMAIN_WARP_SIMPLEX_REDUCED
 
 
 func _get_used_channels_mask() -> int:
@@ -82,7 +93,7 @@ func _generate_block(buffer: VoxelBuffer, origin_in_voxels: Vector3i, _unused_lo
 			for x in block_size:
 				var real_x: int = origin_in_voxels.x + x
 				var real_z: int = origin_in_voxels.z + z
-				var height := _heightmap_noise.get_noise_2d(real_x, real_z) * 4.0
+				var height := _heightmap_noise.get_noise_2d(real_x, real_z) * 24.0
 				var relative_height := height - oy
 				
 				# Dirt and grass
