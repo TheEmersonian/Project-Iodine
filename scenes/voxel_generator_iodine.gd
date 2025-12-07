@@ -9,9 +9,9 @@ const AIR = 0
 const GRANITE = 1
 const SOIL = 2
 const DIRT = 3
+const GRASS = 4
 const WATER_FULL = 14
 const WATER_TOP = 13
-const LOG = 4
 const LEAVES = 25
 const TALL_GRASS = 8
 const DEAD_SHRUB = 26
@@ -38,17 +38,19 @@ var _heightmap_range := 0
 var _heightmap_noise := FastNoiseLite.new()
 
 func _init():
+	_heightmap_noise.noise_type = FastNoiseLite.TYPE_PERLIN
 	_heightmap_noise.seed = 1
 	_heightmap_noise.fractal_octaves = 13
-	_heightmap_noise.frequency = 0.01
-	_heightmap_noise.fractal_gain = 0.03
+	_heightmap_noise.frequency = 0.00001
+	_heightmap_noise.fractal_gain = 0.3
+	_heightmap_noise.fractal_weighted_strength = 0.5
 	_heightmap_noise.domain_warp_enabled = true
 	_heightmap_noise.domain_warp_amplitude = 15
 	_heightmap_noise.domain_warp_fractal_gain = 0.5
 	_heightmap_noise.domain_warp_fractal_lacunarity = 3.0
 	_heightmap_noise.domain_warp_fractal_octaves = 8
 	_heightmap_noise.domain_warp_fractal_type = FastNoiseLite.DOMAIN_WARP_FRACTAL_INDEPENDENT
-	_heightmap_noise.domain_warp_frequency = 0.01
+	_heightmap_noise.domain_warp_frequency = 0.1
 	_heightmap_noise.domain_warp_type = FastNoiseLite.DOMAIN_WARP_SIMPLEX_REDUCED
 
 
@@ -78,27 +80,27 @@ func _generate_block(buffer: VoxelBuffer, origin_in_voxels: Vector3i, _unused_lo
 		buffer.fill(AIR, _CHANNEL)
 
 	elif origin_in_voxels.y + block_size < _heightmap_min_y:
-		buffer.fill(DIRT, _CHANNEL)
+		buffer.fill(GRANITE, _CHANNEL)
 
 	else:
 		var rng := RandomNumberGenerator.new()
 		rng.seed = _get_chunk_seed_2d(chunk_pos)
 		
-		var gx: int
+		var gx := origin_in_voxels.x
 		var gz := origin_in_voxels.z
 
 		for z in block_size:
-			gx = origin_in_voxels.x
+			
 
 			for x in block_size:
 				var real_x: int = origin_in_voxels.x + x
 				var real_z: int = origin_in_voxels.z + z
-				var height := _heightmap_noise.get_noise_2d(real_x, real_z) * 24.0
+				var height := _heightmap_noise.get_noise_2d(real_x, real_z) * 254.0
 				var relative_height := height - oy
 				
 				# Dirt and grass
 				if relative_height > block_size:
-					buffer.fill_area(DIRT,
+					buffer.fill_area(GRANITE,
 						Vector3i(x, 0, z), Vector3i(x + 1, block_size, z + 1), _CHANNEL)
 				elif relative_height > 0:
 					buffer.fill_area(DIRT,
@@ -106,10 +108,7 @@ func _generate_block(buffer: VoxelBuffer, origin_in_voxels: Vector3i, _unused_lo
 					if height >= 0:
 						buffer.set_voxel(SOIL, x, relative_height - 1, z, _CHANNEL)
 						if relative_height < block_size and rng.randf() < 0.2:
-							var foliage = TALL_GRASS
-							if rng.randf() < 0.1:
-								foliage = DEAD_SHRUB
-							buffer.set_voxel(DIRT, x, relative_height, z, _CHANNEL)
+							buffer.set_voxel(GRASS, x, relative_height, z, _CHANNEL)
 				
 				# Water
 				if height < 0 and oy < 0:

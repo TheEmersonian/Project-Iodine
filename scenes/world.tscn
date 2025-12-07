@@ -1,10 +1,11 @@
-[gd_scene load_steps=16 format=3 uid="uid://cfnr4ca22og42"]
+[gd_scene load_steps=18 format=3 uid="uid://cfnr4ca22og42"]
 
 [ext_resource type="Script" uid="uid://b2d1nvb6rev3l" path="res://scripts/world.gd" id="1_k0juu"]
 [ext_resource type="VoxelGeneratorScript" uid="uid://bt0vhybgoge83" path="res://scripts/worldgen/voxel_generator_new.tres" id="2_71j4m"]
 [ext_resource type="Material" uid="uid://d3sc04hyggear" path="res://assets/materials/granite.tres" id="2_rwgxs"]
 [ext_resource type="Material" uid="uid://vwqiesmwl3fb" path="res://assets/materials/soil.tres" id="3_k0juu"]
 [ext_resource type="Material" uid="uid://bvb1t06psgdnw" path="res://assets/materials/dirt.tres" id="4_71j4m"]
+[ext_resource type="Material" uid="uid://ucwa8hl5ogwb" path="res://assets/materials/grass.tres" id="6_qfnet"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_e5uuo"]
 sky_top_color = Color(0.26364025, 0.6113812, 0.88896304, 1)
@@ -38,8 +39,12 @@ material_override_0 = ExtResource("3_k0juu")
 atlas_size_in_tiles = Vector2i(1, 1)
 material_override_0 = ExtResource("4_71j4m")
 
+[sub_resource type="VoxelBlockyModelCube" id="VoxelBlockyModelCube_i7141"]
+atlas_size_in_tiles = Vector2i(1, 1)
+material_override_0 = ExtResource("6_qfnet")
+
 [sub_resource type="VoxelBlockyLibrary" id="VoxelBlockyLibrary_4wyf3"]
-models = Array[VoxelBlockyModel]([SubResource("VoxelBlockyModelEmpty_nnsk1"), SubResource("VoxelBlockyModelCube_rwgxs"), SubResource("VoxelBlockyModelCube_k0juu"), SubResource("VoxelBlockyModelCube_qfnet")])
+models = Array[VoxelBlockyModel]([SubResource("VoxelBlockyModelEmpty_nnsk1"), SubResource("VoxelBlockyModelCube_rwgxs"), SubResource("VoxelBlockyModelCube_k0juu"), SubResource("VoxelBlockyModelCube_qfnet"), SubResource("VoxelBlockyModelCube_i7141")])
 
 [sub_resource type="VoxelMesherBlocky" id="VoxelMesherBlocky_k0juu"]
 library = SubResource("VoxelBlockyLibrary_4wyf3")

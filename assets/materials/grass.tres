@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://ucwa8hl5ogwb"]
+
+[ext_resource type="Texture2D" uid="uid://d2e6o7ygwbtgu" path="res://assets/textures/block_faces/grass_face.png" id="1_prref"]
+
+[resource]
+albedo_texture = ExtResource("1_prref")
+metallic_specular = 0.0
+texture_filter = 0
+texture_repeat = false

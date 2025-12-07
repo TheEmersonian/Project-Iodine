@@ -68,6 +68,7 @@ func _ready() -> void:
 	#makes the inventory invisible
 	inventory.hide()
 	display_mouse_item()
+	vox_tool.set_raycast_normal_enabled(true)
 
 func setup_stats():
 	movement_speed = Statistic.new("movement_speed", 5.0)
@@ -127,6 +128,8 @@ func _physics_process(delta: float) -> void:
 				check_for_perspective_change()
 				check_for_interactions()
 	else:
+		if Engine.get_physics_frames() % 100 == 0:
+			print("Inventory: " + str(inventory_open) + ", Pause Menu: " + str(game_paused))
 		display_mouse_item()
 	if gamemode == PlayerGamemode.Survival:
 		_push_away_rigid_bodies()
@@ -292,13 +295,15 @@ func creative_movement():
 		velocity.z = move_toward(velocity.z, 0, SPEED)
 
 func check_for_interactions():
-	print("Check for interactions")
-	var raycast_result: VoxelRaycastResult = vox_tool.raycast(interaction_raycast.global_position, interaction_raycast.rotation)                                                   
+	#print("Check for interactions")
+	var raycast_result: VoxelRaycastResult = vox_tool.raycast(first_person_camera.global_transform.origin, -first_person_camera.global_transform.basis.z.normalized(), reach.current_value())                  
+	#if Engine.get_physics_frames() % 100 == 0:
+	#	print("position: " + str(first_person_camera.global_position) + " rotation: " + str(-first_person_camera.global_transform.basis.z.normalized()))
 	if raycast_result != null:
 		if Input.is_action_just_pressed("Left Click"):
 			world.remove_block(raycast_result.position)
 		elif Input.is_action_just_pressed("Right Click"):
-			world.place_block(raycast_result.previous_position)
+			world.place_block(raycast_result.previous_position, BlockRegistry.get_block_from_id(selected_item.item_id))
 	else:
 		interaction_raycast.target_position.z = -1 * reach.current_value()
 		if interaction_raycast.is_colliding():

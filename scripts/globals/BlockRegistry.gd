@@ -60,12 +60,12 @@ func get_block_from_name(blockname: String) -> BlockDef:
 
 func _ready() -> void:
 	#-1 reserved for air
-	register_block(-1, BlockDef.new("air", -1, -1,
+	register_block(-1, BlockDef.new("air", 0, -1,
 	null, null, false, 0.0))
 	##STONE (1-100 reserved for natural stone blocks) 
 	#granite
 	##            this and                      this should be the same value
-	register_block(1, BlockDef.new("granite", 0, 1,
+	register_block(1, BlockDef.new("granite", 1, 1,
 		preload("res://assets/textures/icons/granite.tres"), 
 		preload("res://assets/models/granite.tres"), 
 		true))
@@ -92,17 +92,17 @@ func _ready() -> void:
 	
 	##DIRT (101-150 reserved for dirt blocks)
 	#soil, the healthy version of dirt
-	register_block(101, BlockDef.new("soil", 6, 101,
+	register_block(101, BlockDef.new("soil", 2, 101,
 	preload("res://assets/textures/icons/soil.tres"), 
 	preload("res://assets/models/soil.tres"), 
 	true))
 	#dirt
-	register_block(102, BlockDef.new("dirt", 7, 102,
+	register_block(102, BlockDef.new("dirt", 3, 102,
 	preload("res://assets/textures/icons/dirt.tres"), 
 	preload("res://assets/models/dirt.tres"), 
 	true))
 	#soil with healthy grass, this is generally what will generate, but it can be made less healthy through various processes
-	register_block(103, BlockDef.new("soil_with_healthy_grass", 8, 103,
+	register_block(103, BlockDef.new("grass", 4, 103,
 	preload("res://assets/textures/icons/soil_with_healthy_grass.tres"), 
 	preload("res://assets/models/soil_with_healthy_grass.tres"), 
 	true))

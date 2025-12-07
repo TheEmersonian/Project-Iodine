@@ -18,15 +18,11 @@ func _ready() -> void:
 func world_pos_to_block_pos(world_pos: Vector3):
 	return Vector3i(world_pos + Vector3(0.5, 0.5, 0.5))
 
-func remove_block(pos: Vector3i):
-	var block_pos: Vector3i = world_pos_to_block_pos(pos)
-	print("Removing block at: " + str(block_pos))
-	voxel_tool.set_voxel(block_pos, 0)
+func remove_block(pos: Vector3):
+	voxel_tool.set_voxel(pos, 0)
 
-func place_block(pos: Vector3i, block = null):
-	var block_pos: Vector3i = world_pos_to_block_pos(pos)
-	print("Placing block at: " + str(block_pos))
-	voxel_tool.set_voxel(pos, 1)
+func place_block(pos: Vector3, block = BlockRegistry.BlockDef):
+	voxel_tool.set_voxel(pos, block.meshlib_id)
 
 func spawn_player():
 	var player = player_scene.instantiate()
