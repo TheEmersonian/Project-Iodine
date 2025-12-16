@@ -1,12 +1,11 @@
-[gd_scene load_steps=13 format=3 uid="uid://bfxa5pid3lbdu"]
+[gd_scene load_steps=12 format=3 uid="uid://bfxa5pid3lbdu"]
 
 [ext_resource type="Script" uid="uid://d3w22ngjvl3fh" path="res://scripts/entities/player/player.gd" id="1_08t41"]
 [ext_resource type="PackedScene" uid="uid://b0gob3vo1d03d" path="res://scenes/ui/crosshair.tscn" id="2_5u6hq"]
 [ext_resource type="PackedScene" uid="uid://dscmtqfahp8dv" path="res://scenes/ui/info_panel.tscn" id="2_42nxq"]
-[ext_resource type="PackedScene" uid="uid://cndiwhcn4w421" path="res://scenes/ui/hotbar.tscn" id="3_1ie0h"]
-[ext_resource type="PackedScene" uid="uid://gqnw4wg66ygh" path="res://scenes/ui/inventory.tscn" id="4_42nxq"]
 [ext_resource type="PackedScene" uid="uid://dhrpv57y4f84o" path="res://scenes/ui/health_bar.tscn" id="4_ss7kx"]
 [ext_resource type="PackedScene" uid="uid://dt6ok5fgnxgr2" path="res://scenes/ui/floating_item.tscn" id="6_d4qa6"]
+[ext_resource type="PackedScene" uid="uid://7s8sca4wdyp5" path="res://scenes/ui/player_inventory.tscn" id="8_c5rqy"]
 [ext_resource type="PackedScene" uid="uid://22pjlktle5o1" path="res://scenes/ui/pause_menu.tscn" id="8_dnykm"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_08t41"]
@@ -64,48 +63,22 @@ anchor_bottom = 0.5
 [node name="UI" type="CanvasLayer" parent="."]
 script = SubResource("GDScript_1ie0h")
 
+[node name="Player Inventory" parent="UI" instance=ExtResource("8_c5rqy")]
+
 [node name="HealthBar" parent="UI" instance=ExtResource("4_ss7kx")]
+visible = false
 custom_minimum_size = Vector2(250, 50)
 anchors_preset = -1
 anchor_left = 0.275
-anchor_top = 0.75
+anchor_top = 0.825
 anchor_right = 0.425
-anchor_bottom = 0.8
+anchor_bottom = 0.85
 offset_top = 0.0
 offset_right = 0.0
 offset_bottom = 0.0
 grow_horizontal = 2
 size_flags_horizontal = 0
 size_flags_vertical = 8
-
-[node name="VBoxContainer" type="VBoxContainer" parent="UI"]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -465.0
-offset_top = -483.0
-offset_right = 465.0
-offset_bottom = 483.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 0
-alignment = 1
-
-[node name="Inventory" parent="UI/VBoxContainer" instance=ExtResource("4_42nxq")]
-layout_mode = 2
-
-[node name="Hotbar" parent="UI" instance=ExtResource("3_1ie0h")]
-anchors_preset = -1
-anchor_top = 0.9
-anchor_bottom = 0.9
-offset_left = -450.0
-offset_top = -100.0
-offset_right = 450.0
-offset_bottom = 0.0
-grow_vertical = 0
-size_flags_horizontal = 4
 
 [node name="FloatingItem" parent="UI" instance=ExtResource("6_d4qa6")]
 unique_name_in_owner = true
@@ -114,10 +87,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -466.0
-offset_top = -25.0
-offset_right = -416.0
-offset_bottom = 25.0
+offset_left = 854.0
+offset_top = 27.0
+offset_right = 904.0
+offset_bottom = 77.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 4
@@ -136,9 +109,7 @@ grow_vertical = 1
 visible = false
 
 [node name="VoxelViewer" type="VoxelViewer" parent="."]
+view_distance = 192
 
-[connection signal="slot_clicked" from="UI/VBoxContainer/Inventory" to="." method="_on_inventory_slot_clicked"]
-[connection signal="selected_item_changed" from="UI/Hotbar" to="." method="_on_hotbar_selected_item_changed"]
-[connection signal="slot_clicked" from="UI/Hotbar" to="." method="_on_hotbar_slot_clicked"]
 [connection signal="game_continued" from="UI/Pause Menu" to="." method="_on_pause_menu_game_continued"]
 [connection signal="game_exited" from="UI/Pause Menu" to="." method="_on_pause_menu_game_exited"]

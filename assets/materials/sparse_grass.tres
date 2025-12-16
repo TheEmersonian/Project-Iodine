@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://4hoj3co62m4q"]
+
+[ext_resource type="Texture2D" uid="uid://6tap8m18cn52" path="res://assets/textures/block_faces/sparse_grass_face.png" id="1_sbabd"]
+
+[resource]
+albedo_texture = ExtResource("1_sbabd")
+metallic_specular = 0.0
+texture_filter = 0
+texture_repeat = false

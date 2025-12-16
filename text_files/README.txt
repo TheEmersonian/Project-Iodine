@@ -8,7 +8,6 @@ ERROR CODES:
 # BUGS: 
 	Placing grass crashes the game
 	Sideways movement does not work properly
-	Deep stone doesnt have an icon
 # FIXED BUGS:
 	Select inventory square and mouse no go back - fixed (was setting mouse mode to confined instead of captured when closing the inventory)
 	Game crashes when picking up items - fixed (was checking the raycasts collider after removing it)
@@ -18,6 +17,11 @@ ERROR CODES:
 	
 
 # TODO: 
+	
+	
+	
+	crafting
+	player body is a physical thing with kenematics
 	Selected item is held
 	3d item textures
 	
@@ -26,6 +30,8 @@ ERROR CODES:
 		Jump Strength - done
 		Health (also get health working) - added as attribute but does nil
 		Reach
+	
+	Fully fleshed out geology - use this as a template: https://www.youtube.com/watch?v=b4e7mTRB7qg
 	
 	Full Inventory Support - partially done
 	Items: {
@@ -68,14 +74,14 @@ ERROR CODES:
 	Basic World Gen
 	Breaking Blocks
 	Placing Blocks
-	Blocks Drop Items
 	Pickup Items
-	Block Highlight
 	Basic UI
 	Primitive f3 Menu
-	Inventory that allows moving of items
 	Physical dropped blocks
 	dropped item merging - the larger the stack the more mass it has and the longer it takes to merge
 	Sprinting
 	Inventory that more closely mirrors the minecraft one
 	Chunks generate around player, save to file, and load from file (maybe loading doesnt work completely tho)
+	Blocks Drop Items (for the second time)
+	More exxagerated terrain generation with rare anamolies
+	Inventory that allows moving of items (for the second time)

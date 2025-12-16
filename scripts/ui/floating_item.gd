@@ -19,7 +19,7 @@ func set_item(item: Item):
 		return
 	else:
 		show()
-		item_display.texture = ItemProcesser.id_to_icon(item.item_id)
+		item_display.texture = BlockRegistry.get_block_from_id(stored_item.item_id).icon
 	if item.item_count > 1:
 		slot_count.show()
 		slot_count.text = str(item.item_count)

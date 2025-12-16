@@ -85,7 +85,6 @@ lightmap_size_hint = Vector2i(14, 21)
 material = SubResource("StandardMaterial3D_p2c7g")
 
 [sub_resource type="BoxMesh" id="BoxMesh_nt8um"]
-lightmap_size_hint = Vector2i(14, 21)
 material = ExtResource("7_x2046")
 
 [sub_resource type="BoxMesh" id="BoxMesh_5cl7p"]

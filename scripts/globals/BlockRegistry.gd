@@ -59,8 +59,8 @@ func get_block_from_name(blockname: String) -> BlockDef:
 	return null
 
 func _ready() -> void:
-	#-1 reserved for air
-	register_block(-1, BlockDef.new("air", 0, -1,
+	#0 reserved for air
+	register_block(0, BlockDef.new("air", 0, 0,
 	null, null, false, 0.0))
 	##STONE (1-100 reserved for natural stone blocks) 
 	#granite
@@ -70,48 +70,55 @@ func _ready() -> void:
 		preload("res://assets/models/granite.tres"), 
 		true))
 	#white claystone
-	register_block(2, BlockDef.new("white_claystone", 1, 2,
-		preload("res://assets/textures/icons/white_claystone.tres"), 
-		preload("res://assets/models/white_claystone.tres"), 
-		true))
+	#register_block(2, BlockDef.new("white_claystone", 1, 2,
+	#	preload("res://assets/textures/icons/white_claystone.tres"), 
+	#	preload("res://assets/models/white_claystone.tres"), 
+	#	true))
 	#foidolite
-	register_block(3, BlockDef.new("foidolite", 2, 3,
-	preload("res://assets/textures/icons/foidolite.tres"), 
-	preload("res://assets/models/foidolite.tres"), 
-	true))
+	#register_block(3, BlockDef.new("foidolite", 2, 3,
+	#preload("res://assets/textures/icons/foidolite.tres"), 
+	#preload("res://assets/models/foidolite.tres"), 
+	#true))
 	#pegmatite
-	register_block(4, BlockDef.new("pegmatite", 3, 4,
-	preload("res://assets/textures/icons/pegmatite.tres"), 
-	preload("res://assets/models/pegmatite.tres"), 
-	true))
+	#register_block(4, BlockDef.new("pegmatite", 3, 4,
+	#preload("res://assets/textures/icons/pegmatite.tres"), 
+	#preload("res://assets/models/pegmatite.tres"), 
+	#true))
 	#jaspillite
-	register_block(5, BlockDef.new("jaspillite", 4, 5,
-	preload("res://assets/textures/icons/jaspillite.tres"),
-	preload("res://assets/models/jaspillite.tres"),
-	true))
+	#register_block(5, BlockDef.new("jaspillite", 4, 5,
+	#preload("res://assets/textures/icons/jaspillite.tres"),
+	#preload("res://assets/models/jaspillite.tres"),
+	#true))
 	
 	##DIRT (101-150 reserved for dirt blocks)
 	#soil, the healthy version of dirt
-	register_block(101, BlockDef.new("soil", 2, 101,
+	register_block(2, BlockDef.new("soil", 2, 2,
 	preload("res://assets/textures/icons/soil.tres"), 
 	preload("res://assets/models/soil.tres"), 
 	true))
 	#dirt
-	register_block(102, BlockDef.new("dirt", 3, 102,
+	register_block(3, BlockDef.new("dirt", 3, 3,
 	preload("res://assets/textures/icons/dirt.tres"), 
 	preload("res://assets/models/dirt.tres"), 
 	true))
 	#soil with healthy grass, this is generally what will generate, but it can be made less healthy through various processes
-	register_block(103, BlockDef.new("grass", 4, 103,
+	register_block(4, BlockDef.new("grass", 4, 4,
 	preload("res://assets/textures/icons/soil_with_healthy_grass.tres"), 
 	preload("res://assets/models/soil_with_healthy_grass.tres"), 
 	true))
-	#soil with grass.  Later I will add different types of grass
-	register_block(104, BlockDef.new("soil_with_grass", 9, 104,
+	#sparse grass
+	register_block(5, BlockDef.new("sparse_grass", 5, 5,
 	preload("res://assets/textures/icons/soil_with_grass.tres"), 
 	preload("res://assets/models/soil_with_grass.tres"), 
 	true))
-	
+	#muddy soil
+	register_block(6, BlockDef.new("muddy_soil", 6, 6, 
+	ImageTexture.create_from_image(preload("res://assets/textures/block_faces/mud_face.png").get_image()), 
+	preload("res://assets/models/muddy_soil.tres"),
+	true))
+	#Error block, shows up when something goes wrong
+	register_block(7, BlockDef.new("ERROR", 7, 7, 
+	null, null, true))
 	
 
 

@@ -1,8 +1,9 @@
 extends Node3D
 
 @export var player_scene: PackedScene = preload("res://scenes/entities/player.tscn")
+@export var player: CharacterBody3D
 
-@export var spawn_position: Vector3 = Vector3(0, 50, 0)
+@export var spawn_position: Vector3 = Vector3(0, 280, 0)
 
 @onready var voxel_terrain: VoxelTerrain = $VoxelTerrain
 #@onready var map_gen: MapGenerator = $MapGenerator
@@ -18,19 +19,33 @@ func _ready() -> void:
 func world_pos_to_block_pos(world_pos: Vector3):
 	return Vector3i(world_pos + Vector3(0.5, 0.5, 0.5))
 
-func remove_block(pos: Vector3):
+func remove_block(pos: Vector3, drop_block: bool = true):
+	print("removing block at " + str(pos))
+	if drop_block:
+		print("dropping block")
+		var block_id: int = voxel_tool.get_voxel(pos)
+		var block_def = BlockRegistry.get_block_from_id(block_id)
+		var block_item: Item = Item.new(block_def.block_name, block_def.item_id, 1)
+		var dropped_item = DroppedItem.new(block_item)
+		add_child(dropped_item)
+		dropped_item.global_position = pos + Vector3(0.5, 0.5, 0.5)
+		dropped_item.give_random_jump()
 	voxel_tool.set_voxel(pos, 0)
 
 func place_block(pos: Vector3, block = BlockRegistry.BlockDef):
 	voxel_tool.set_voxel(pos, block.meshlib_id)
 
 func spawn_player():
-	var player = player_scene.instantiate()
+	player = player_scene.instantiate()
 	add_child(player)
 	player.position = spawn_position
 
 func exit_game():
 	print("Exiting world...")
+	#remember to add player saving at some point
+	player.queue_free()
+	await get_tree().process_frame
+	await get_tree().process_frame
 	##needs to be done this way instead of change to packed for some reason
 	get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn")
 

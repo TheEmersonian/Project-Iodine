@@ -17,9 +17,8 @@ enum PlayerGamemode {
 #interaction raycast (for placing, breaking, anc clicking blocks as well as hitting mobs)
 @onready var interaction_raycast: RayCast3D = $FirstPersonCamera/InteractionRaycast
 #ui stuff&things
-@onready var hotbar: PanelContainer = $UI/Hotbar
 @onready var health_bar: ProgressBar = $UI/HealthBar
-@onready var inventory: PanelContainer = $UI/VBoxContainer/Inventory
+@onready var player_inventory: Control = $"UI/Player Inventory"
 @onready var info_panel: VBoxContainer = $UI/InfoPanel
 @onready var mouse_item_display: MarginContainer = $UI/FloatingItem
 @onready var pause_menu: PanelContainer = $"UI/Pause Menu"
@@ -66,7 +65,7 @@ func _ready() -> void:
 	#sets the mouse in the center of the screen and hides it
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	#makes the inventory invisible
-	inventory.hide()
+	player_inventory.hide_main_inventory()
 	display_mouse_item()
 	vox_tool.set_raycast_normal_enabled(true)
 
@@ -89,19 +88,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		first_person_camera.rotation.x = clamp(first_person_camera.rotation.x, deg_to_rad(-85), deg_to_rad(85))
 	pass
 
-func get_empty_slot():
-	##Cannot be typed, must support both a bool and an item slot
-	var empty_slot = hotbar.get_empty_slot()
-	if !empty_slot:
-		empty_slot = inventory.get_empty_slot()
-	return empty_slot
-
-func get_valid_slot(item: Item):
-	var valid_slot = hotbar.get_valid_slot(item)
-	if !valid_slot:
-		valid_slot = inventory.get_valid_slot(item)
-	return valid_slot
-
 func _physics_process(delta: float) -> void:
 	selected_position = Vector3.ZERO
 	update_ui()
@@ -115,7 +101,6 @@ func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		if gamemode == PlayerGamemode.Survival:
 			velocity += GRAVITY * delta
-	selected_item = hotbar.selected_item
 	check_for_ui_inputs()
 	if !inventory_open and !game_paused:
 		match gamemode:
@@ -128,8 +113,6 @@ func _physics_process(delta: float) -> void:
 				check_for_perspective_change()
 				check_for_interactions()
 	else:
-		if Engine.get_physics_frames() % 100 == 0:
-			print("Inventory: " + str(inventory_open) + ", Pause Menu: " + str(game_paused))
 		display_mouse_item()
 	if gamemode == PlayerGamemode.Survival:
 		_push_away_rigid_bodies()
@@ -164,38 +147,16 @@ func update_ui():
 
 func check_for_ui_inputs():
 	if !Input.is_action_pressed("Alternative Action Trigger"):
-		if Input.is_action_just_pressed("Swap Offhand"):
-			print("Attempting to swap offhands")
-			var offhand: ItemSlot = inventory.offhand_slot
-			var mainhand: ItemSlot = hotbar.get_selected_slot()
-			if offhand.stored_item.item_id == 0:
-				print("Offhand is empty")
-				if mainhand.stored_item.item_id == 0:
-					print("Mainhand is also empty, returning")
-					return
-				else:	
-					print("Mainhand swapping to offhand")
-					offhand.stored_item = mainhand.stored_item.copy()
-					mainhand.clear()
-					offhand.update_item()
-					mainhand.update_item()
-			elif mainhand.stored_item.item_id == 0:
-				mainhand.stored_item = offhand.stored_item.copy()
-				offhand.clear()
-				offhand.update_item()
-				mainhand.update_item()
-			else:
-				return
 		if Input.is_action_just_pressed("Open Inventory"):
 			# If the inventory is open, close it
 			if inventory_open:
 				inventory_open = false
-				inventory.hide()
+				player_inventory.hide_main_inventory()
 				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 			# If the inventory is not open, open it
 			else:
 				inventory_open = true
-				inventory.show()
+				player_inventory.show_main_inventory()
 				Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 			print("Is Inventory Open?: " + str(inventory_open))
 		if Input.is_action_just_pressed("Escape"):
@@ -264,9 +225,9 @@ func check_for_movement():
 func creative_movement():
 	velocity *= 0.9
 	if Input.is_action_pressed("Jump"):
-		velocity.y = 10
+		velocity.y += 5
 	if Input.is_action_pressed("Crouch"):
-		velocity.y = -10
+		velocity.y += -5
 	# Handle Sprinting
 	sprint_timer -= 1.0
 	if Input.is_action_just_pressed("Move Foward"):
@@ -304,34 +265,35 @@ func check_for_interactions():
 			world.remove_block(raycast_result.position)
 		elif Input.is_action_just_pressed("Right Click"):
 			world.place_block(raycast_result.previous_position, BlockRegistry.get_block_from_id(selected_item.item_id))
-	else:
-		interaction_raycast.target_position.z = -1 * reach.current_value()
-		if interaction_raycast.is_colliding():
-			var hit_object: Node3D = interaction_raycast.get_collider()
-			if hit_object != null:
-				selected_position = Vector3.ZERO
-				check_for_pickup(hit_object)
+	
+	interaction_raycast.target_position.z = -1 * reach.current_value()
+	if interaction_raycast.is_colliding():
+		var hit_object: Node3D = interaction_raycast.get_collider()
+		if hit_object != null:
+			selected_position = Vector3.ZERO
+			check_for_pickup(hit_object)
 
 func check_for_pickup(hit_object: Node3D):
 	if Input.is_action_just_pressed("Pick Up"):
 		if hit_object == null:
 			return
 		if hit_object.has_method("pick_up"):
+			return
 			##Cannot be typed, must support both a bool and an item slot
-			var valid_slot = get_valid_slot(hit_object.item)
-			if valid_slot is bool:
-				return
-			hit_object.pick_up(valid_slot)
-			interaction_raycast.force_raycast_update()
+			#var valid_slot = get_valid_slot(hit_object.item)
+			#if valid_slot is bool:
+			#	return
+			#hit_object.pick_up(valid_slot)
+			#interaction_raycast.force_raycast_update()
 
-func check_for_block_interaction(hit_object: Node3D):
+func check_for_block_interaction():
 	print("checking for block interaction")
 	# check for breaking blocks
 	if Input.is_action_just_pressed("Left Click"):
 		#subtract the collision normal for breaking blocks
 		var destroy_position: Vector3 = interaction_raycast.get_collision_point() - (interaction_raycast.get_collision_normal().normalized() * 0.02)
 		print("Attempting to destroy block at: " + str(destroy_position))
-		world.remove_block(destroy_position)
+		world.remove_block(destroy_position, true)
 		interaction_raycast.force_raycast_update()
 	# check for placing blocks
 	elif Input.is_action_just_pressed("Right Click"):
@@ -350,7 +312,7 @@ func display_mouse_item():
 
 func place_block(place_position: Vector3, gridmap: GridMap):
 	gridmap.place_block(place_position, selected_item.item_id)
-	hotbar.selected_slot.use_item(1)
+	#hotbar.selected_slot.use_item(1)
 
 func _on_hotbar_selected_item_changed() -> void:
 	selected_item = $UI/Hotbar.selected_item

@@ -1,15 +1,21 @@
-[gd_scene load_steps=18 format=3 uid="uid://cfnr4ca22og42"]
+[gd_scene load_steps=29 format=3 uid="uid://cfnr4ca22og42"]
 
 [ext_resource type="Script" uid="uid://b2d1nvb6rev3l" path="res://scripts/world.gd" id="1_k0juu"]
 [ext_resource type="VoxelGeneratorScript" uid="uid://bt0vhybgoge83" path="res://scripts/worldgen/voxel_generator_new.tres" id="2_71j4m"]
 [ext_resource type="Material" uid="uid://d3sc04hyggear" path="res://assets/materials/granite.tres" id="2_rwgxs"]
 [ext_resource type="Material" uid="uid://vwqiesmwl3fb" path="res://assets/materials/soil.tres" id="3_k0juu"]
 [ext_resource type="Material" uid="uid://bvb1t06psgdnw" path="res://assets/materials/dirt.tres" id="4_71j4m"]
-[ext_resource type="Material" uid="uid://ucwa8hl5ogwb" path="res://assets/materials/grass.tres" id="6_qfnet"]
+[ext_resource type="Material" uid="uid://b8l74mvm0y6y6" path="res://assets/materials/soil_with_grass.tres" id="6_e3hyu"]
+[ext_resource type="Material" uid="uid://4hoj3co62m4q" path="res://assets/materials/sparse_grass.tres" id="7_i7141"]
+[ext_resource type="Material" uid="uid://b0d424xlwldx7" path="res://assets/materials/muddy_soil.tres" id="8_4mrxx"]
+[ext_resource type="Texture2D" uid="uid://b20vt7ohuv04d" path="res://assets/textures/ui/Ether2.png" id="9_7r4gi"]
+[ext_resource type="Material" uid="uid://cylyw7iw73m4s" path="res://assets/materials/basalt.tres" id="10_w7kh3"]
+[ext_resource type="Material" uid="uid://dj4gisypra2h3" path="res://assets/materials/rhyolite.tres" id="11_e3hyu"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_e5uuo"]
 sky_top_color = Color(0.26364025, 0.6113812, 0.88896304, 1)
 sky_horizon_color = Color(0.7245861, 0.8037714, 0.86416686, 1)
+ground_bottom_color = Color(0.7254902, 0.8039216, 0.8627451, 1)
 ground_horizon_color = Color(0.7245861, 0.8037714, 0.86416686, 1)
 
 [sub_resource type="Sky" id="Sky_nnsk1"]
@@ -19,8 +25,21 @@ sky_material = SubResource("ProceduralSkyMaterial_e5uuo")
 background_mode = 2
 sky = SubResource("Sky_nnsk1")
 tonemap_mode = 2
+tonemap_white = 16.0
 ssao_enabled = true
 glow_enabled = true
+fog_enabled = true
+fog_mode = 1
+fog_light_color = Color(0.7254902, 0.8039216, 0.8627451, 1)
+fog_density = 1.0
+fog_depth_curve = 2.9281714
+fog_depth_begin = 20.0
+fog_depth_end = 200.0
+volumetric_fog_albedo = Color(0.7254902, 0.8039216, 0.8627451, 1)
+volumetric_fog_sky_affect = 0.0
+adjustment_enabled = true
+adjustment_contrast = 0.8
+adjustment_saturation = 0.8
 
 [sub_resource type="VoxelStreamRegionFiles" id="VoxelStreamRegionFiles_nnsk1"]
 save_generator_output = true
@@ -40,11 +59,50 @@ atlas_size_in_tiles = Vector2i(1, 1)
 material_override_0 = ExtResource("4_71j4m")
 
 [sub_resource type="VoxelBlockyModelCube" id="VoxelBlockyModelCube_i7141"]
+atlas_size_in_tiles = Vector2i(3, 1)
+mesh_ortho_rotation_index = 10
+tile_left = Vector2i(1, 0)
+tile_right = Vector2i(1, 0)
+tile_bottom = Vector2i(2, 0)
+tile_back = Vector2i(1, 0)
+tile_front = Vector2i(1, 0)
+material_override_0 = ExtResource("6_e3hyu")
+
+[sub_resource type="VoxelBlockyModelCube" id="VoxelBlockyModelCube_4mrxx"]
 atlas_size_in_tiles = Vector2i(1, 1)
-material_override_0 = ExtResource("6_qfnet")
+material_override_0 = ExtResource("7_i7141")
+
+[sub_resource type="VoxelBlockyModelCube" id="VoxelBlockyModelCube_7r4gi"]
+atlas_size_in_tiles = Vector2i(1, 1)
+material_override_0 = ExtResource("8_4mrxx")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w7kh3"]
+albedo_color = Color(1, 0, 1, 1)
+albedo_texture = ExtResource("9_7r4gi")
+metallic = 1.0
+metallic_specular = 1.0
+metallic_texture = ExtResource("9_7r4gi")
+emission_enabled = true
+emission = Color(1, 0, 0, 1)
+emission_energy_multiplier = 8.0
+emission_operator = 1
+emission_texture = ExtResource("9_7r4gi")
+
+[sub_resource type="VoxelBlockyModelCube" id="VoxelBlockyModelCube_e3hyu"]
+atlas_size_in_tiles = Vector2i(1, 1)
+color = Color(1, 0, 1, 1)
+material_override_0 = SubResource("StandardMaterial3D_w7kh3")
+
+[sub_resource type="VoxelBlockyModelCube" id="VoxelBlockyModelCube_w7kh3"]
+atlas_size_in_tiles = Vector2i(1, 1)
+material_override_0 = ExtResource("10_w7kh3")
+
+[sub_resource type="VoxelBlockyModelCube" id="VoxelBlockyModelCube_q5onr"]
+atlas_size_in_tiles = Vector2i(1, 1)
+material_override_0 = ExtResource("11_e3hyu")
 
 [sub_resource type="VoxelBlockyLibrary" id="VoxelBlockyLibrary_4wyf3"]
-models = Array[VoxelBlockyModel]([SubResource("VoxelBlockyModelEmpty_nnsk1"), SubResource("VoxelBlockyModelCube_rwgxs"), SubResource("VoxelBlockyModelCube_k0juu"), SubResource("VoxelBlockyModelCube_qfnet"), SubResource("VoxelBlockyModelCube_i7141")])
+models = Array[VoxelBlockyModel]([SubResource("VoxelBlockyModelEmpty_nnsk1"), SubResource("VoxelBlockyModelCube_rwgxs"), SubResource("VoxelBlockyModelCube_k0juu"), SubResource("VoxelBlockyModelCube_qfnet"), SubResource("VoxelBlockyModelCube_i7141"), SubResource("VoxelBlockyModelCube_4mrxx"), SubResource("VoxelBlockyModelCube_7r4gi"), SubResource("VoxelBlockyModelCube_e3hyu"), SubResource("VoxelBlockyModelCube_w7kh3"), SubResource("VoxelBlockyModelCube_q5onr")])
 
 [sub_resource type="VoxelMesherBlocky" id="VoxelMesherBlocky_k0juu"]
 library = SubResource("VoxelBlockyLibrary_4wyf3")
@@ -60,6 +118,7 @@ shadow_enabled = true
 environment = SubResource("Environment_rwgxs")
 
 [node name="VoxelTerrain" type="VoxelTerrain" parent="."]
+max_view_distance = 512
 run_stream_in_editor = false
 stream = SubResource("VoxelStreamRegionFiles_nnsk1")
 generator = ExtResource("2_71j4m")

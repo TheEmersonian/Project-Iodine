@@ -1,0 +1,6 @@
+[gd_resource type="BoxMesh" load_steps=2 format=3 uid="uid://d4lc2ntxde4bb"]
+
+[ext_resource type="Material" uid="uid://b0d424xlwldx7" path="res://assets/materials/muddy_soil.tres" id="1_a81oq"]
+
+[resource]
+material = ExtResource("1_a81oq")

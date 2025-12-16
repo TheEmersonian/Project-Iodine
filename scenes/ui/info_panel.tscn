@@ -22,3 +22,6 @@ layout_mode = 2
 
 [node name="CHUNK_POSITION" type="Label" parent="."]
 layout_mode = 2
+
+[node name="WORLDGEN_STATS" type="Label" parent="."]
+layout_mode = 2
