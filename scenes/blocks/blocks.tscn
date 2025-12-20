@@ -1,6 +1,6 @@
 [gd_scene load_steps=32 format=3 uid="uid://bt2yxy151a58m"]
 
-[ext_resource type="Material" uid="uid://d3sc04hyggear" path="res://assets/materials/granite.tres" id="1_x2046"]
+[ext_resource type="Material" uid="uid://d3sc04hyggear" path="res://assets/materials/white_granite.tres" id="1_x2046"]
 [ext_resource type="Texture2D" uid="uid://c8bjd3o57g3y4" path="res://assets/textures/blocks/white_claystone.png" id="2_vok4x"]
 [ext_resource type="Texture2D" uid="uid://cs6ntue3j6dx6" path="res://assets/textures/blocks/foidolite.png" id="3_mk7ic"]
 [ext_resource type="Texture2D" uid="uid://dtsp3gw24t6lv" path="res://assets/textures/blocks/pegmatite.png" id="4_mk7ic"]

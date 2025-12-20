@@ -1,0 +1,9 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://ba6f7m7n1ha1v"]
+
+[ext_resource type="Texture2D" uid="uid://dgrmktbwhmiit" path="res://assets/textures/block_faces/gneiss_side_face.png" id="1_siqlo"]
+
+[resource]
+albedo_texture = ExtResource("1_siqlo")
+metallic_specular = 0.0
+texture_filter = 0
+texture_repeat = false

@@ -3,7 +3,7 @@ extends Node3D
 @export var player_scene: PackedScene = preload("res://scenes/entities/player.tscn")
 @export var player: CharacterBody3D
 
-@export var spawn_position: Vector3 = Vector3(0, 280, 0)
+@export var spawn_position: Vector3 = Vector3(0, 150, 500)
 
 @onready var voxel_terrain: VoxelTerrain = $VoxelTerrain
 #@onready var map_gen: MapGenerator = $MapGenerator
@@ -25,11 +25,12 @@ func remove_block(pos: Vector3, drop_block: bool = true):
 		print("dropping block")
 		var block_id: int = voxel_tool.get_voxel(pos)
 		var block_def = BlockRegistry.get_block_from_id(block_id)
-		var block_item: Item = Item.new(block_def.block_name, block_def.item_id, 1)
-		var dropped_item = DroppedItem.new(block_item)
-		add_child(dropped_item)
-		dropped_item.global_position = pos + Vector3(0.5, 0.5, 0.5)
-		dropped_item.give_random_jump()
+		if block_def != null:
+			var block_item: Item = Item.new(block_def.block_name, block_def.item_id, 1)
+			var dropped_item = DroppedItem.new(block_item)
+			add_child(dropped_item)
+			dropped_item.global_position = pos + Vector3(0.5, 0.5, 0.5)
+			dropped_item.give_random_jump()
 	voxel_tool.set_voxel(pos, 0)
 
 func place_block(pos: Vector3, block = BlockRegistry.BlockDef):
