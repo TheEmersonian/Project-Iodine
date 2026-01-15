@@ -1,4 +1,4 @@
-[gd_scene load_steps=37 format=3 uid="uid://cfnr4ca22og42"]
+[gd_scene load_steps=39 format=3 uid="uid://cfnr4ca22og42"]
 
 [ext_resource type="Script" uid="uid://b2d1nvb6rev3l" path="res://scripts/world.gd" id="1_k0juu"]
 [ext_resource type="VoxelGeneratorScript" uid="uid://bt0vhybgoge83" path="res://scripts/worldgen/voxel_generator_new.tres" id="2_71j4m"]
@@ -15,6 +15,7 @@
 [ext_resource type="Material" uid="uid://6c4mvxdt5db8" path="res://assets/materials/pink_granite.tres" id="13_jhx03"]
 [ext_resource type="Material" uid="uid://cle4iitkuh8jt" path="res://assets/materials/red_granite.tres" id="14_o8fc1"]
 [ext_resource type="Material" uid="uid://ba6f7m7n1ha1v" path="res://assets/materials/gneiss.tres" id="15_xo05s"]
+[ext_resource type="Material" uid="uid://cu6wtd5xumhu3" path="res://assets/materials/mafic_sandstone.tres" id="16_dss4m"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_e5uuo"]
 sky_top_color = Color(0.26364025, 0.6113812, 0.88896304, 1)
@@ -120,8 +121,12 @@ material_override_0 = ExtResource("14_o8fc1")
 atlas_size_in_tiles = Vector2i(1, 1)
 material_override_0 = ExtResource("15_xo05s")
 
+[sub_resource type="VoxelBlockyModelCube" id="VoxelBlockyModelCube_7t5mc"]
+atlas_size_in_tiles = Vector2i(1, 1)
+material_override_0 = ExtResource("16_dss4m")
+
 [sub_resource type="VoxelBlockyLibrary" id="VoxelBlockyLibrary_4wyf3"]
-models = Array[VoxelBlockyModel]([SubResource("VoxelBlockyModelEmpty_nnsk1"), SubResource("VoxelBlockyModelCube_rwgxs"), SubResource("VoxelBlockyModelCube_k0juu"), SubResource("VoxelBlockyModelCube_qfnet"), SubResource("VoxelBlockyModelCube_i7141"), SubResource("VoxelBlockyModelCube_4mrxx"), SubResource("VoxelBlockyModelCube_7r4gi"), SubResource("VoxelBlockyModelCube_e3hyu"), SubResource("VoxelBlockyModelCube_w7kh3"), SubResource("VoxelBlockyModelCube_q5onr"), SubResource("VoxelBlockyModelCube_jhx03"), SubResource("VoxelBlockyModelCube_o8fc1"), SubResource("VoxelBlockyModelCube_xo05s"), SubResource("VoxelBlockyModelCube_dss4m")])
+models = Array[VoxelBlockyModel]([SubResource("VoxelBlockyModelEmpty_nnsk1"), SubResource("VoxelBlockyModelCube_rwgxs"), SubResource("VoxelBlockyModelCube_k0juu"), SubResource("VoxelBlockyModelCube_qfnet"), SubResource("VoxelBlockyModelCube_i7141"), SubResource("VoxelBlockyModelCube_4mrxx"), SubResource("VoxelBlockyModelCube_7r4gi"), SubResource("VoxelBlockyModelCube_e3hyu"), SubResource("VoxelBlockyModelCube_w7kh3"), SubResource("VoxelBlockyModelCube_q5onr"), SubResource("VoxelBlockyModelCube_jhx03"), SubResource("VoxelBlockyModelCube_o8fc1"), SubResource("VoxelBlockyModelCube_xo05s"), SubResource("VoxelBlockyModelCube_dss4m"), SubResource("VoxelBlockyModelCube_7t5mc")])
 
 [sub_resource type="VoxelMesherBlocky" id="VoxelMesherBlocky_k0juu"]
 library = SubResource("VoxelBlockyLibrary_4wyf3")

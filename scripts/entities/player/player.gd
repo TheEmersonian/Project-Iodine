@@ -223,6 +223,9 @@ func check_for_movement():
 		velocity.z = move_toward(velocity.z, 0, SPEED)
 
 func creative_movement():
+	if Input.is_action_just_pressed("Alternative Action Trigger"):
+		vox_tool.mode = VoxelTool.MODE_REMOVE
+		vox_tool.do_box(Vector3i(position), Vector3i(position - Vector3(16,50,16)))
 	velocity *= 0.9
 	if Input.is_action_pressed("Jump"):
 		velocity.y += 5
@@ -265,7 +268,6 @@ func check_for_interactions():
 			world.remove_block(raycast_result.position)
 		elif Input.is_action_just_pressed("Right Click"):
 			world.place_block(raycast_result.previous_position, BlockRegistry.get_block_from_id(selected_item.item_id))
-	
 	interaction_raycast.target_position.z = -1 * reach.current_value()
 	if interaction_raycast.is_colliding():
 		var hit_object: Node3D = interaction_raycast.get_collider()

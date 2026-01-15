@@ -21,6 +21,10 @@ ItemProcesser="*res://scripts/globals/itemprocesser.gd"
 BlockRegistry="*res://scripts/globals/BlockRegistry.gd"
 GameManager="*res://scripts/globals/game_manager.gd"
 
+[debug_draw_3d]
+
+settings/addon_root_folder="res://addons/debug_draw_3d"
+
 [display]
 
 window/size/mode=4

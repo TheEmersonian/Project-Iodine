@@ -32,8 +32,9 @@ ERROR CODES:
 		Reach
 	
 	Fully fleshed out geology - use this as a template: https://www.youtube.com/watch?v=b4e7mTRB7qg
-	
+	think about the slope in blocks for some parts of worldgen, the slope of the noise might not be very high but when it switches from one block to another (because its integers) we might wanna consider that
 	Full Inventory Support - partially done
+	Generation that reads/writes some values to/from global variables so for instance we don't have to recompute the vertical heightmap for every chunk (vertically)
 	Items: {
 		Better inventory managemtner items
 		item to control where the mouse appears

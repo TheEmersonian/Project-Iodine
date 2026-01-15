@@ -3,7 +3,7 @@ extends Node3D
 @export var player_scene: PackedScene = preload("res://scenes/entities/player.tscn")
 @export var player: CharacterBody3D
 
-@export var spawn_position: Vector3 = Vector3(0, 150, 500)
+@export var spawn_position: Vector3 = Vector3(2000, 100, 0)
 
 @onready var voxel_terrain: VoxelTerrain = $VoxelTerrain
 #@onready var map_gen: MapGenerator = $MapGenerator
