@@ -1,0 +1,35 @@
+[gd_scene load_steps=2 format=3 uid="uid://prd66qufh1mq"]
+
+[ext_resource type="PackedScene" uid="uid://c72wvh2adaf7x" path="res://scenes/entities/keilid.tscn" id="1_6rwba"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+transform = Transform3D(0.9970527, 0, 0.07671903, 0, 0.99999994, 0, -0.07671903, 0, 0.9970527, 0, -1.2995505, 0)
+use_collision = true
+size = Vector3(20, 1, 20)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.1482306, 0, 0)
+use_collision = true
+size = Vector3(3, 3, 3)
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="."]
+transform = Transform3D(0.6859856, 0.04473713, -0.09472045, 0, 0.87956846, 0.46123433, 0.07047829, -0.43543983, 0.92194074, 3.6193135, 0, -0.03689003)
+use_collision = true
+size = Vector3(3, 3, 3)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.9370201, 0.3492755, 0, -0.34927547, 0.9370201, 1.2891822, 3.3400087, 7.9009533)
+current = true
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.98426354, -0.10827075, -0.13965225, 0.17670685, 0.6030721, 0.77786815, 0, -0.7903048, 0.61271405, 0, 18.24801, -29.777843)
+
+[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.9204708, -0.37954825, 0.09314873, 0, 0.23834702, 0.97118014, -0.3908115, -0.89394295, 0.21939147, -25.577606, 18.24801, -29.777843)
+light_color = Color(0.6862745, 1, 1, 1)
+light_energy = 0.4
+
+[node name="Keilid" parent="." instance=ExtResource("1_6rwba")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2617316, 0)

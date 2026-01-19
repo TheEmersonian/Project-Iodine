@@ -1,0 +1,241 @@
+[gd_scene load_steps=14 format=3 uid="uid://c72wvh2adaf7x"]
+
+[ext_resource type="Script" uid="uid://cqy50ds5rj541" path="res://scenes/entities/keilid.gd" id="1_v6bcc"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_x5sa7"]
+size = Vector3(0.55, 0.55, 0.55)
+
+[sub_resource type="BoxMesh" id="BoxMesh_xrcuq"]
+size = Vector3(0.55, 0.55, 0.55)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v6bcc"]
+albedo_color = Color(0, 0, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_eu1ap"]
+material = SubResource("StandardMaterial3D_v6bcc")
+size = Vector3(0.1, 0.065, 0.1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1ixnj"]
+size = Vector3(0.75, 0.6, 0.35)
+
+[sub_resource type="BoxMesh" id="BoxMesh_v6bcc"]
+size = Vector3(0.75, 0.6, 0.35)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_eu1ap"]
+size = Vector3(0.75, 0.3, 0.35)
+
+[sub_resource type="BoxMesh" id="BoxMesh_17lwr"]
+size = Vector3(0.75, 0.3, 0.35)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_v6bcc"]
+size = Vector3(0.3, 0.6, 0.3)
+
+[sub_resource type="BoxMesh" id="BoxMesh_x5sa7"]
+size = Vector3(0.3, 0.6, 0.3)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_xrcuq"]
+size = Vector3(0.35, 0.1, 0.45)
+
+[sub_resource type="BoxMesh" id="BoxMesh_c86bj"]
+size = Vector3(0.35, 0.1, 0.45)
+
+[node name="Keilid" type="Node3D"]
+script = ExtResource("1_v6bcc")
+
+[node name="Head" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, 0)
+top_level = true
+mass = 10.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Head"]
+shape = SubResource("BoxShape3D_x5sa7")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Head"]
+mesh = SubResource("BoxMesh_xrcuq")
+
+[node name="LeftEye" type="MeshInstance3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0.1, 0.25)
+mesh = SubResource("BoxMesh_eu1ap")
+
+[node name="RightEye" type="MeshInstance3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 0.1, 0.25)
+mesh = SubResource("BoxMesh_eu1ap")
+
+[node name="Camera3D" type="Camera3D" parent="Head"]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 0.2250241)
+
+[node name="Neck" type="Generic6DOFJoint3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4527957, 0)
+node_a = NodePath("../Head")
+node_b = NodePath("../Torso")
+exclude_nodes_from_collision = false
+linear_limit_y/upper_distance = 0.7
+linear_limit_y/lower_distance = 0.7
+linear_spring_x/enabled = true
+linear_spring_y/enabled = true
+linear_spring_y/stiffness = 0.3
+linear_spring_y/equilibrium_point = -1.0
+linear_spring_z/enabled = true
+angular_limit_x/upper_angle = 0.08726646
+angular_limit_x/lower_angle = -0.08726646
+angular_limit_x/restitution = 0.1
+angular_limit_y/upper_angle = 0.61086524
+angular_limit_y/lower_angle = -0.61086524
+angular_limit_y/restitution = 0.1
+angular_limit_z/upper_angle = 0.08726646
+angular_limit_z/lower_angle = -0.08726646
+angular_limit_z/restitution = 0.1
+
+[node name="Torso" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.15, 0)
+top_level = true
+mass = 20.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Torso"]
+shape = SubResource("BoxShape3D_1ixnj")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Torso"]
+mesh = SubResource("BoxMesh_v6bcc")
+
+[node name="Waist" type="Generic6DOFJoint3D" parent="."]
+node_a = NodePath("../Torso")
+node_b = NodePath("../Pelvis")
+linear_limit_y/upper_distance = 0.45
+linear_limit_y/lower_distance = 0.45
+
+[node name="Pelvis" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+top_level = true
+mass = 25.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Pelvis"]
+shape = SubResource("BoxShape3D_eu1ap")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Pelvis"]
+mesh = SubResource("BoxMesh_17lwr")
+
+[node name="LeftHip" type="Generic6DOFJoint3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0.5417031, 0)
+node_a = NodePath("../Pelvis")
+node_b = NodePath("../LeftThigh")
+linear_limit_x/upper_distance = -0.2
+linear_limit_x/lower_distance = -0.2
+linear_limit_y/upper_distance = 0.55
+linear_limit_y/lower_distance = 0.55
+
+[node name="LeftThigh" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0.25, 0)
+top_level = true
+mass = 5.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LeftThigh"]
+shape = SubResource("BoxShape3D_v6bcc")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="LeftThigh"]
+mesh = SubResource("BoxMesh_x5sa7")
+
+[node name="LeftNee" type="Generic6DOFJoint3D" parent="."]
+node_a = NodePath("../LeftThigh")
+node_b = NodePath("../LeftCrus")
+linear_limit_y/upper_distance = 0.6
+linear_limit_y/lower_distance = 0.6
+angular_limit_x/upper_angle = 0.3926991
+angular_limit_x/lower_angle = -0.08726646
+angular_limit_y/upper_angle = 0.04363323
+angular_limit_y/lower_angle = -0.04363323
+angular_limit_z/upper_angle = 0.08726646
+angular_limit_z/lower_angle = -0.08726646
+
+[node name="LeftCrus" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, -0.35, 0)
+top_level = true
+mass = 4.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LeftCrus"]
+shape = SubResource("BoxShape3D_v6bcc")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="LeftCrus"]
+mesh = SubResource("BoxMesh_x5sa7")
+
+[node name="LeftAnkle" type="Generic6DOFJoint3D" parent="."]
+node_a = NodePath("../LeftCrus")
+node_b = NodePath("../LeftFoot")
+linear_limit_y/upper_distance = -0.35
+linear_limit_y/lower_distance = -0.35
+angular_limit_x/upper_angle = 1.3089969
+angular_limit_x/lower_angle = -0.17453292
+angular_limit_y/upper_angle = 0.61086524
+angular_limit_y/lower_angle = -0.7853982
+
+[node name="LeftFoot" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, -0.7, 0.05)
+top_level = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LeftFoot"]
+shape = SubResource("BoxShape3D_xrcuq")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="LeftFoot"]
+mesh = SubResource("BoxMesh_c86bj")
+
+[node name="RightHip" type="Generic6DOFJoint3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.21716557, 0.5417031, 0)
+node_a = NodePath("../Pelvis")
+node_b = NodePath("../RightThigh")
+linear_limit_x/upper_distance = 0.2
+linear_limit_x/lower_distance = 0.2
+linear_limit_y/upper_distance = 0.55
+linear_limit_y/lower_distance = 0.55
+
+[node name="RightThigh" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.25, 0)
+top_level = true
+mass = 5.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RightThigh"]
+shape = SubResource("BoxShape3D_v6bcc")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="RightThigh"]
+mesh = SubResource("BoxMesh_x5sa7")
+
+[node name="RightNee" type="Generic6DOFJoint3D" parent="."]
+node_a = NodePath("../RightThigh")
+node_b = NodePath("../RightCrus")
+linear_limit_y/upper_distance = 0.6
+linear_limit_y/lower_distance = 0.6
+angular_limit_x/upper_angle = 0.08726646
+angular_limit_x/lower_angle = -0.3926991
+angular_limit_y/upper_angle = 0.04363323
+angular_limit_y/lower_angle = -0.04363323
+angular_limit_z/upper_angle = 0.08726646
+angular_limit_z/lower_angle = -0.08726646
+
+[node name="RightCrus" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, -0.35, 0)
+top_level = true
+mass = 4.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RightCrus"]
+shape = SubResource("BoxShape3D_v6bcc")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="RightCrus"]
+mesh = SubResource("BoxMesh_x5sa7")
+
+[node name="RightAnkle" type="Generic6DOFJoint3D" parent="."]
+node_a = NodePath("../RightCrus")
+node_b = NodePath("../RightFoot")
+linear_limit_y/upper_distance = -0.35
+linear_limit_y/lower_distance = -0.35
+angular_limit_x/upper_angle = 1.3089969
+angular_limit_x/lower_angle = -0.17453292
+angular_limit_y/upper_angle = 0.7853982
+angular_limit_y/lower_angle = -0.61086524
+
+[node name="RightFoot" type="RigidBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, -0.7, 0.05)
+top_level = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RightFoot"]
+shape = SubResource("BoxShape3D_xrcuq")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="RightFoot"]
+mesh = SubResource("BoxMesh_c86bj")

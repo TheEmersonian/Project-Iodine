@@ -5,7 +5,7 @@ extends Control
 @onready var settings: Button = $CenterContainer/VBoxContainer/Settings
 @onready var quit_game: Button = $"CenterContainer/VBoxContainer/Quit Game"
 
-const WORLD = preload("res://scenes/world.tscn")
+const WORLD = preload("res://testplayer.tscn") #preload("res://scenes/world.tscn")
 
 func _on_new_game_pressed() -> void:
 	get_tree().change_scene_to_packed(WORLD)
