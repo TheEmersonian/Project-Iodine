@@ -50,7 +50,8 @@ func _ready() -> void:
 	connected_physics_objects.append(right_thigh)
 	connected_physics_objects.append(right_crus)
 	connected_physics_objects.append(right_foot)
-	#torso.apply_central_impulse(Vector3(5, 15, 5))
+	#torso.apply_central_impulse(Vector3(1, 0, 1))
+	head.position += Vector3(2,2,2)
 
 func _process(_delta: float) -> void:
 	if Input.is_action_just_pressed("C"):
@@ -69,8 +70,8 @@ func _physics_process(_delta: float) -> void:
 	var support_center := Vector2(foot_middle.x, foot_middle.z)
 	DebugDraw3D.draw_box((Vector3(-0.3, -0.1, -0.3) + to_global(foot_middle) * Vector3(1.0, 0.0, 1.0)), Quaternion.IDENTITY, Vector3(0.6, 0.2, 0.6), Color.BLUE)
 	var error := support_center - com_proj
-	torso.apply_central_force(Vector3(error.x, 0.0, error.y) * 650.0)
-	DebugDraw3D.draw_arrow(torso.position, torso.position+Vector3(error.x, 0.0, error.y), Color.BLUE, 0.1, true)
+	pelvis.apply_central_force(Vector3(error.x, 0.0, error.y) * 750.0)
+	DebugDraw3D.draw_arrow(pelvis.position, pelvis.position+(Vector3(error.x, 0.0, error.y) * 5.0), Color.BLUE, 0.1, true)
 	#for object: RigidBody3D in connected_physics_objects: #all connected parts should try to stay at the center of mass, only the x and z though
 	#	var center_mass_diff: Vector3 = center_of_mass - center_of_mass_in_global_space(object)
 	#	object.constant_force = (center_mass_diff * Vector3(5.0, 0.0, 5.0))

@@ -65,7 +65,8 @@ mesh = SubResource("BoxMesh_eu1ap")
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 0.2250241)
 
 [node name="Neck" type="Generic6DOFJoint3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4527957, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+top_level = true
 node_a = NodePath("../Head")
 node_b = NodePath("../Torso")
 exclude_nodes_from_collision = false
@@ -98,10 +99,18 @@ shape = SubResource("BoxShape3D_1ixnj")
 mesh = SubResource("BoxMesh_v6bcc")
 
 [node name="Waist" type="Generic6DOFJoint3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.99999994, 0, 0, 0, 0.99999994, 0, 0.8, 0)
+top_level = true
 node_a = NodePath("../Torso")
 node_b = NodePath("../Pelvis")
-linear_limit_y/upper_distance = 0.45
-linear_limit_y/lower_distance = 0.45
+linear_limit_y/upper_distance = -0.45
+linear_limit_y/lower_distance = -0.45
+angular_limit_x/upper_angle = 0.2617994
+angular_limit_x/lower_angle = 0.04363323
+angular_limit_y/upper_angle = 0.17453292
+angular_limit_y/lower_angle = -0.17453292
+angular_limit_z/upper_angle = 0.034906585
+angular_limit_z/lower_angle = -0.034906585
 
 [node name="Pelvis" type="RigidBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
@@ -116,12 +125,15 @@ mesh = SubResource("BoxMesh_17lwr")
 
 [node name="LeftHip" type="Generic6DOFJoint3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0.5417031, 0)
+top_level = true
 node_a = NodePath("../Pelvis")
 node_b = NodePath("../LeftThigh")
 linear_limit_x/upper_distance = -0.2
 linear_limit_x/lower_distance = -0.2
 linear_limit_y/upper_distance = 0.55
 linear_limit_y/lower_distance = 0.55
+angular_limit_x/upper_angle = 0.08726646
+angular_limit_x/lower_angle = -0.20943952
 
 [node name="LeftThigh" type="RigidBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0.25, 0)
@@ -132,9 +144,12 @@ mass = 5.0
 shape = SubResource("BoxShape3D_v6bcc")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="LeftThigh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00010025501, -0.0040873885, 0.0006917119)
 mesh = SubResource("BoxMesh_x5sa7")
 
 [node name="LeftNee" type="Generic6DOFJoint3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 0, 0.1)
+top_level = true
 node_a = NodePath("../LeftThigh")
 node_b = NodePath("../LeftCrus")
 linear_limit_y/upper_distance = 0.6
@@ -158,11 +173,14 @@ shape = SubResource("BoxShape3D_v6bcc")
 mesh = SubResource("BoxMesh_x5sa7")
 
 [node name="LeftAnkle" type="Generic6DOFJoint3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, -0.6, -0.1)
+top_level = true
 node_a = NodePath("../LeftCrus")
 node_b = NodePath("../LeftFoot")
 linear_limit_y/upper_distance = -0.35
 linear_limit_y/lower_distance = -0.35
-angular_limit_x/upper_angle = 1.3089969
+linear_limit_y/softness = 0.9
+angular_limit_x/upper_angle = 0.17453292
 angular_limit_x/lower_angle = -0.17453292
 angular_limit_y/upper_angle = 0.61086524
 angular_limit_y/lower_angle = -0.7853982
@@ -179,12 +197,15 @@ mesh = SubResource("BoxMesh_c86bj")
 
 [node name="RightHip" type="Generic6DOFJoint3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.21716557, 0.5417031, 0)
+top_level = true
 node_a = NodePath("../Pelvis")
 node_b = NodePath("../RightThigh")
 linear_limit_x/upper_distance = 0.2
 linear_limit_x/lower_distance = 0.2
 linear_limit_y/upper_distance = 0.55
 linear_limit_y/lower_distance = 0.55
+angular_limit_x/upper_angle = 0.08726646
+angular_limit_x/lower_angle = -0.20943952
 
 [node name="RightThigh" type="RigidBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0.25, 0)
@@ -198,12 +219,14 @@ shape = SubResource("BoxShape3D_v6bcc")
 mesh = SubResource("BoxMesh_x5sa7")
 
 [node name="RightNee" type="Generic6DOFJoint3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, 0, 0.1)
+top_level = true
 node_a = NodePath("../RightThigh")
 node_b = NodePath("../RightCrus")
 linear_limit_y/upper_distance = 0.6
 linear_limit_y/lower_distance = 0.6
-angular_limit_x/upper_angle = 0.08726646
-angular_limit_x/lower_angle = -0.3926991
+angular_limit_x/upper_angle = 0.3926991
+angular_limit_x/lower_angle = -0.08726646
 angular_limit_y/upper_angle = 0.04363323
 angular_limit_y/lower_angle = -0.04363323
 angular_limit_z/upper_angle = 0.08726646
@@ -221,11 +244,15 @@ shape = SubResource("BoxShape3D_v6bcc")
 mesh = SubResource("BoxMesh_x5sa7")
 
 [node name="RightAnkle" type="Generic6DOFJoint3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, -0.6, -0.1)
+top_level = true
 node_a = NodePath("../RightCrus")
 node_b = NodePath("../RightFoot")
+exclude_nodes_from_collision = false
 linear_limit_y/upper_distance = -0.35
 linear_limit_y/lower_distance = -0.35
-angular_limit_x/upper_angle = 1.3089969
+linear_limit_y/softness = 0.9
+angular_limit_x/upper_angle = 0.17453292
 angular_limit_x/lower_angle = -0.17453292
 angular_limit_y/upper_angle = 0.7853982
 angular_limit_y/lower_angle = -0.61086524
